@@ -9,7 +9,13 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/">Workspace</a>
+        <div class="navbar-nav">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">Workspace</a>
+            <a class="nav-link text-white" href="{% url 'task_list' %}">Задания</a>
+            <a class="nav-link text-white" href="{% url 'employee_list' %}">Сотрудники</a>
+            <a class="nav-link text-white" href="{% url 'client_list' %}">Клиенты</a>
+        </div>
+        
 
         <div class="d-flex align-items-center">
             {% if user.is_authenticated %}
