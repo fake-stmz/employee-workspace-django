@@ -18,6 +18,7 @@
             <th>Статус</th>
             <th>Назначено</th>
             <th>До</th>
+            <th>Действия</th>
         </tr>
     </thead>
 
@@ -28,6 +29,10 @@
             <td>{{ task.status }}</td>
             <td>{{ task.assigned_to }}</td>
             <td>{{ task.due_date }}</td>
+            <td>
+                <a href="{% url 'task_update' task.id %}" class="btn btn-sm btn-warning">Редактировать</a>
+                <a href="{% url 'task_delete' task.id %}" class="btn btn-sm btn-danger">Удалить</a>
+            </td>
         </tr>
         {% empty %}
         <tr>
@@ -36,5 +41,9 @@
         {% endfor %}
     </tbody>
 </table>
+
+<a href="{% url 'task_create' %}" class="btn btn-primary mb-3">
+    Создать задачу
+</a>
 
 {% endblock %}

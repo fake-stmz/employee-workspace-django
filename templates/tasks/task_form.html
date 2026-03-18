@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>{{ title }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="mb-3">
+        {{ form.title.label_tag }}
+        {{ form.title }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.description.label_tag }}
+        {{ form.description }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.status.label_tag }}
+        {{ form.status }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.assigned_to.label_tag }}
+        {{ form.assigned_to }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.project.label_tag }}
+        {{ form.project }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.client.label_tag }}
+        {{ form.client }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.due_date.label_tag }}
+        {{ form.due_date }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <a href="{% url 'task_list' %}" class="btn btn-secondary">Отмена</a>
+
+</form>
+
+{% endblock %}
