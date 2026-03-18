@@ -4,8 +4,9 @@ from django.contrib.auth import views as auth_views
 from rest_framework.routers import DefaultRouter
 
 from apps.tasks.views import *
-from apps.clients.views import ClientViewSet, client_list
-from apps.employees.views import EmployeeViewSet, dashboard, employee_list
+from apps.clients.views import *
+from apps.employees.views import *
+from apps.wiki.views import *
 
 router = DefaultRouter()
 router.register(r"tasks", TaskViewSet)
@@ -21,7 +22,7 @@ urlpatterns = [
     # Авторизация
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    # Главная панель - W.I.P. (пока переводит на спискок задач)
+    # Главная панель - W.I.P. (пока переводит на список задач)
     path('', dashboard, name='dashboard'),
     # Задачи
     path('tasks/', task_list, name='task_list'),
@@ -32,4 +33,10 @@ urlpatterns = [
     path('employees/', employee_list, name='employee_list'),
     # Клиенты
     path('clients/', client_list, name='client_list'),
+    # Мини-вики
+    path('wiki/', wiki_list, name='wiki_list'),
+    # path('wiki/<int:pk>/', wiki_page_view, name='wiki_page'),
+    path('wiki/create/', wiki_create, name='wiki_create'),
+    path('wiki/<int:pk>/edit/', wiki_update, name='wiki_update'),
+    path('wiki/<int:pk>/delete/', wiki_delete, name='wiki_delete'),
 ]
