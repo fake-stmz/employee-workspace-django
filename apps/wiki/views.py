@@ -16,7 +16,7 @@ def wiki_list(request):
 
 
 @login_required
-def wiki_detail(request, pk):
+def wiki_page_view(request, pk):
 
     page = get_object_or_404(WikiPage, pk=pk)
 
@@ -24,7 +24,7 @@ def wiki_detail(request, pk):
         "page": page
     }
 
-    return render(request, "wiki/wiki_detail.html", context)
+    return render(request, "wiki/wiki_page.html", context)
 
 
 @login_required

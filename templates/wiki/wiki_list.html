@@ -17,7 +17,11 @@
     <tbody>
         {% for page in pages %}
         <tr>
-            <td>{{ page.title }}</td>
+            <td>
+                <a href="{% url 'wiki_page' page.id %}">
+                    {{ page.title }}
+                </a>
+            </td>
             <td>{{ page.author }}</td>
             <td>{{ page.created_at }}</td>
             <td>

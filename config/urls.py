@@ -35,7 +35,7 @@ urlpatterns = [
     path('clients/', client_list, name='client_list'),
     # Мини-вики
     path('wiki/', wiki_list, name='wiki_list'),
-    # path('wiki/<int:pk>/', wiki_page_view, name='wiki_page'),
+    path('wiki/<int:pk>/', wiki_page_view, name='wiki_page'),
     path('wiki/create/', wiki_create, name='wiki_create'),
     path('wiki/<int:pk>/edit/', wiki_update, name='wiki_update'),
     path('wiki/<int:pk>/delete/', wiki_delete, name='wiki_delete'),
