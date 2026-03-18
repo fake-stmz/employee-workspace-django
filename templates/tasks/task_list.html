@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Tasks</h2>
+
+<div class="mb-3">
+    <a href="?status=new" class="btn btn-secondary">Новые</a>
+    <a href="?status=progress" class="btn btn-warning">В процессе</a>
+    <a href="?status=done" class="btn btn-success">Выполненные</a>
+    <a href="/tasks/" class="btn btn-dark">Все</a>
+</div>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Статус</th>
+            <th>Назначено</th>
+            <th>До</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for task in tasks %}
+        <tr>
+            <td>{{ task.title }}</td>
+            <td>{{ task.status }}</td>
+            <td>{{ task.assigned_to }}</td>
+            <td>{{ task.due_date }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">Нет задач</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

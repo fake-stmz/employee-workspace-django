@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from rest_framework.routers import DefaultRouter
 
-from apps.tasks.views import TaskViewSet, ProjectViewSet
+from apps.tasks.views import TaskViewSet, ProjectViewSet, task_list
 from apps.clients.views import ClientViewSet
 from apps.employees.views import EmployeeViewSet, dashboard
 
@@ -19,4 +19,5 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('', dashboard, name='dashboard'),
+    path('tasks/', task_list, name='task_list'),
 ]

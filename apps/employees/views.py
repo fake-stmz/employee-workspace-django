@@ -1,9 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from rest_framework import viewsets
 from .models import Employee
 from .serializers import EmployeeSerializer
 from django.contrib.auth.decorators import login_required
-from apps.tasks.models import Task
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
@@ -13,10 +12,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
 @login_required
 def dashboard(request):
-
-    if request.user.groups.filter(name='Менеджер').exists():
-        tasks = Task.objects.all()
-    else:
-        tasks = Task.objects.filter(assigned_to__email=request.user.email)
-
-    return render(request, 'dashboard.html', {'tasks': tasks})
+    # W.I.P.
+    # Пока что просто редирект на список задач
+    
+    return redirect('task_list')
