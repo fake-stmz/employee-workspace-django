@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 from rest_framework.routers import DefaultRouter
 
 from apps.tasks.views import *
-from apps.clients.views import ClientViewSet
+from apps.clients.views import ClientViewSet, client_list
 from apps.employees.views import EmployeeViewSet, dashboard, employee_list
 
 router = DefaultRouter()
@@ -30,4 +30,6 @@ urlpatterns = [
     path('tasks/<int:pk>/delete/', task_delete, name='task_delete'),
     # Сотрудники
     path('employees/', employee_list, name='employee_list'),
+    # Клиенты
+    path('clients/', client_list, name='client_list'),
 ]
