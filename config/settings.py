@@ -95,3 +95,10 @@ STATIC_URL = 'static/'
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        # "rest_framework.permissions.IsAuthenticated", -- Упрощено на время разработки
+        "rest_framework.permissions.AllowAny",
+    ]
+}
