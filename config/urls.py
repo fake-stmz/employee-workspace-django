@@ -5,7 +5,7 @@ from rest_framework.routers import DefaultRouter
 
 from apps.tasks.views import *
 from apps.clients.views import ClientViewSet
-from apps.employees.views import EmployeeViewSet, dashboard
+from apps.employees.views import EmployeeViewSet, dashboard, employee_list
 
 router = DefaultRouter()
 router.register(r"tasks", TaskViewSet)
@@ -14,13 +14,20 @@ router.register(r"clients", ClientViewSet)
 router.register(r"employees", EmployeeViewSet)
 
 urlpatterns = [
+    # Стандартная админ-панель Django
     path('admin/', admin.site.urls),
+    # DRF API
     path('api/', include(router.urls)),
+    # Авторизация
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    # Главная панель - W.I.P. (пока переводит на спискок задач)
     path('', dashboard, name='dashboard'),
+    # Задачи
     path('tasks/', task_list, name='task_list'),
     path('tasks/create/', task_create, name='task_create'),
     path('tasks/<int:pk>/edit/', task_update, name='task_update'),
     path('tasks/<int:pk>/delete/', task_delete, name='task_delete'),
+    # Сотрудники
+    path('employees/', employee_list, name='employee_list'),
 ]

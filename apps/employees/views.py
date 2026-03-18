@@ -16,3 +16,14 @@ def dashboard(request):
     # Пока что просто редирект на список задач
     
     return redirect('task_list')
+
+
+@login_required
+def employee_list(request):
+    employees = Employee.objects.all()
+
+    context = {
+        "employees": employees
+    }
+
+    return render(request, "employees/employee_list.html", context)
