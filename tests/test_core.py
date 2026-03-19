@@ -53,3 +53,14 @@ class CoreTests(TestCase):
         response = self.client.get(reverse("task_list"))
 
         self.assertContains(response, "User Task")
+        
+    def test_create_wiki_page(self):
+        self.client.login(username="testuser", password="12345")
+
+        response = self.client.post(reverse("wiki_create"), {
+            "title": "Test Page",
+            "content": "Some content"
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(WikiPage.objects.count(), 1)
