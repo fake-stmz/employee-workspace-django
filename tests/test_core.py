@@ -64,3 +64,17 @@ class CoreTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(WikiPage.objects.count(), 1)
+    
+    def test_wiki_detail(self):
+        page = WikiPage.objects.create(
+            title="Page",
+            content="Content",
+            author=self.employee
+        )
+
+        self.client.login(username="testuser", password="12345")
+
+        response = self.client.get(reverse("wiki_page", args=[page.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Content")
