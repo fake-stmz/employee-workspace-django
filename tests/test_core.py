@@ -28,3 +28,15 @@ class CoreTests(TestCase):
             user=self.user,
             position="Manager"
         )
+    
+    def test_create_task(self):
+        self.client.login(username="testuser", password="12345")
+
+        response = self.client.post(reverse("task_create"), {
+            "title": "Test Task",
+            "status": "new",
+            "assigned_to": self.employee.id
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Task.objects.count(), 1)
