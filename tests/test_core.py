@@ -40,3 +40,16 @@ class CoreTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Task.objects.count(), 1)
+    
+    def test_task_visibility(self):
+        Task.objects.create(
+            title="User Task",
+            status="new",
+            assigned_to=self.employee
+        )
+
+        self.client.login(username="testuser", password="12345")
+
+        response = self.client.get(reverse("task_list"))
+
+        self.assertContains(response, "User Task")
