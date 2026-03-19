@@ -78,3 +78,15 @@ class CoreTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Content")
+    
+    def test_create_email(self):
+        self.client.login(username="testuser", password="12345")
+
+        response = self.client.post(reverse("email_create"), {
+            "receiver_email": "test@mail.com",
+            "subject": "Hello",
+            "body": "Test message"
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(EmailMessage.objects.count(), 1)
