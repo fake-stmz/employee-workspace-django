@@ -17,11 +17,11 @@ class EmailAccount(models.Model):
 
 class EmailMessage(models.Model):
 
-    subject = models.CharField(max_length=255)
-    body = models.TextField()
+    subject = models.CharField(max_length=255, verbose_name="Тема")
+    body = models.TextField(verbose_name="Содержание")
 
     sender_email = models.EmailField()
-    receiver_email = models.EmailField()
+    receiver_email = models.EmailField(verbose_name="Получатель")
 
     client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True)
     employee = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True)

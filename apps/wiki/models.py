@@ -4,8 +4,8 @@ from apps.employees.models import Employee
 
 class WikiPage(models.Model):
 
-    title = models.CharField(max_length=255)
-    content = models.TextField()
+    title = models.CharField(max_length=255, verbose_name="Название")
+    content = models.TextField(verbose_name="Содержание")
 
     author = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True)
 

@@ -22,37 +22,41 @@ class Task(models.Model):
         ("done", "Выполнено")
     ]
 
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    title = models.CharField(max_length=255, verbose_name="Название")
+    description = models.TextField(blank=True, verbose_name="Описание")
 
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default="new"
+        default="new",
+        verbose_name="Статус"
     )
 
-    due_date = models.DateTimeField(null=True, blank=True)
+    due_date = models.DateTimeField(null=True, blank=True, verbose_name="До")
     created_at = models.DateTimeField(auto_now_add=True)
 
     assigned_to = models.ForeignKey(
         Employee,
         on_delete=models.SET_NULL,
         null=True,
-        related_name="tasks"
+        related_name="tasks",
+        verbose_name="Ответственный"
     )
 
     project = models.ForeignKey(
         Project,
         on_delete=models.SET_NULL,
         null=True,
-        blank=True
+        blank=True,
+        verbose_name="Проект"
     )
 
     client = models.ForeignKey(
         Client,
         on_delete=models.SET_NULL,
         null=True,
-        blank=True
+        blank=True,
+        verbose_name="Клиент"
     )
 
     def __str__(self):
