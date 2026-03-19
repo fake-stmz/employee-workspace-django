@@ -7,6 +7,7 @@ from apps.tasks.views import *
 from apps.clients.views import *
 from apps.employees.views import *
 from apps.wiki.views import *
+from apps.mail.views import *
 
 router = DefaultRouter()
 router.register(r"tasks", TaskViewSet)
@@ -39,4 +40,7 @@ urlpatterns = [
     path('wiki/create/', wiki_create, name='wiki_create'),
     path('wiki/<int:pk>/edit/', wiki_update, name='wiki_update'),
     path('wiki/<int:pk>/delete/', wiki_delete, name='wiki_delete'),
+    # Почта (временная заглушка)
+    path('mail/', email_list, name='email_list'),
+    path('mail/create/', email_create, name='email_create'),
 ]

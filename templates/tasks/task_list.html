@@ -26,7 +26,7 @@
         {% for task in tasks %}
         <tr>
             <td>{{ task.title }}</td>
-            <td>{{ task.status }}</td>
+            <td>{{ task.get_status_display }}</td>
             <td>{{ task.assigned_to }}</td>
             <td>{{ task.due_date }}</td>
             <td>

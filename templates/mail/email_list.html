@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Email письма</h2>
+
+<a href="{% url 'email_create' %}" class="btn btn-primary mb-3">
+    Новое письмо
+</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Тема</th>
+            <th>Кому</th>
+            <th>От</th>
+            <th>Дата</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for email in emails %}
+        <tr>
+            <td>{{ email.subject }}</td>
+            <td>{{ email.receiver_email }}</td>
+            <td>{{ email.sender_email }}</td>
+            <td>{{ email.sent_at }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">Нет писем</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
