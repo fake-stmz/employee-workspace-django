@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'apps.documents',
     'apps.mail',
     'apps.wiki',
+    'apps.core'
 ]
 
 MIDDLEWARE = [
