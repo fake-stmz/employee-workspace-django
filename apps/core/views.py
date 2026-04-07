@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import io
 import base64
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import HttpResponseForbidden
 
 @login_required
 def dashboard(request):
@@ -92,3 +94,32 @@ def restore_item(request, model_name, pk):
 
     item.restore()
     return redirect('deleted_items')
+
+
+@login_required
+def permanent_delete(request, model_name, pk):
+    """Полное удаление записи из корзины (только для администраторов)"""
+    if not request.user.is_superuser:
+        return HttpResponseForbidden("У вас нет прав для полного удаления")
+
+    if model_name == 'task':
+        item = get_object_or_404(Task.all_objects, pk=pk)
+        item_name = item.title
+    elif model_name == 'wiki':
+        item = get_object_or_404(WikiPage.all_objects, pk=pk)
+        item_name = item.title
+    else:
+        return redirect('deleted_items')
+
+    if request.method == "POST":
+        item.delete()  # Полное удаление из базы
+        messages.success(request, f'Запись "{item_name}" полностью удалена.')
+        return redirect('deleted_items')
+
+    # GET — показываем подтверждение
+    context = {
+        'item': item,
+        'model_name': model_name,
+        'item_name': item_name,
+    }
+    return render(request, 'permanent_delete_confirm.html', context)
