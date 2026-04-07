@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from apps.tasks.models import Task
 from apps.wiki.models import WikiPage
 from django.db.models import Count
@@ -75,3 +75,20 @@ def deleted_items(request):
         'deleted_wiki': deleted_wiki,
     }
     return render(request, 'deleted_items.html', context)
+
+
+@login_required
+def restore_item(request, model_name, pk):
+    """Восстановление записи"""
+    if not request.user.is_superuser:
+        return redirect('dashboard')
+
+    if model_name == 'task':
+        item = get_object_or_404(Task.all_objects, pk=pk)
+    elif model_name == 'wiki':
+        item = get_object_or_404(WikiPage.all_objects, pk=pk)
+    else:
+        return redirect('deleted_items')
+
+    item.restore()
+    return redirect('deleted_items')

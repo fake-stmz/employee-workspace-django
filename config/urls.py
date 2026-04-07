@@ -50,4 +50,6 @@ urlpatterns = [
     path('mail/create/', email_create, name='email_create'),
     # Удаленные записи
     path('deleted/', deleted_items, name='deleted_items'),
+    # Восстановление записи
+    path('restore/<str:model_name>/<int:pk>/', restore_item, name='restore_item'),
 ]
