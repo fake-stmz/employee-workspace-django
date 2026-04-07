@@ -7,35 +7,88 @@
     <h2><i class="bi bi-building"></i> Клиенты</h2>
 </div>
 
+<!-- Поиск и фильтры -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Поиск по имени, телефону или email...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button id="resetFilters" class="btn btn-outline-secondary w-100">Сбросить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body p-0">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0" id="clientsTable">
             <thead class="table-light">
                 <tr>
-                    <th>Название / Имя</th>
+                    <th>Имя / Название</th>
                     <th>Телефон</th>
                     <th>Email</th>
                     <th>Менеджер</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for client in clients %}
-                <tr>
-                    <td><strong>{{ client.name }}</strong></td>
-                    <td>{{ client.phone }}</td>
-                    <td>{{ client.email|default:"—" }}</td>
-                    <td>{{ client.manager|default:"—" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center py-5 text-muted">
-                        Нет клиентов
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
+            <tbody id="clientsTableBody"></tbody>
         </table>
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const resetBtn = document.getElementById('resetFilters');
+    const tableBody = document.getElementById('clientsTableBody');
+
+    let debounceTimer;
+
+    function loadClients(search = '') {
+        let url = `/api/clients/?format=json`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                tableBody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-muted">Ничего не найдено</td></tr>`;
+                    return;
+                }
+
+                data.forEach(client => {
+                    const row = `
+                        <tr>
+                            <td><strong>${client.name}</strong></td>
+                            <td>${client.phone}</td>
+                            <td>${client.email || '—'}</td>
+                            <td>${client.manager || '—'}</td>
+                        </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            });
+    }
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => loadClients(searchInput.value), 300);
+    });
+
+    resetBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        loadClients();
+    });
+
+    loadClients();
+});
+</script>
 {% endblock %}

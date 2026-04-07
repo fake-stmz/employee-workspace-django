@@ -22,9 +22,9 @@ urlpatterns = [
     path('api/', include(router.urls)),
     # Авторизация
     path('login/', auth_views.LoginView.as_view(
-    template_name='login.html',
-    redirect_authenticated_user=True,   # ← полезная опция
-), name='login'),
+        template_name='login.html',
+        redirect_authenticated_user=True,
+    ), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     # Главная панель
     path('', dashboard, name='dashboard'),
