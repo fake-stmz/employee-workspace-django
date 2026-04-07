@@ -1,30 +1,42 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
+{% block page_title %}Новое письмо{% endblock %}
 
 {% block content %}
 
-<h2>Отправить письмо</h2>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Новое письмо</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
 
-<form method="post">
-    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Кому (email)</label>
+                        {{ form.receiver_email|add_class:"form-control" }}
+                    </div>
 
-    <div class="mb-3">
-        {{ form.receiver_email.label_tag }}
-        {{ form.receiver_email }}
+                    <div class="mb-3">
+                        <label class="form-label">Тема</label>
+                        {{ form.subject|add_class:"form-control" }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Содержание</label>
+                        {{ form.body|add_class:"form-control" }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Отправить
+                    </button>
+                    <a href="{% url 'email_list' %}" class="btn btn-secondary">Отмена</a>
+                </form>
+            </div>
+        </div>
     </div>
-
-    <div class="mb-3">
-        {{ form.subject.label_tag }}
-        {{ form.subject }}
-    </div>
-
-    <div class="mb-3">
-        {{ form.body.label_tag }}
-        {{ form.body }}
-    </div>
-
-    <button type="submit" class="btn btn-primary">Отправить</button>
-    <a href="{% url 'email_list' %}" class="btn btn-secondary">Отмена</a>
-
-</form>
+</div>
 
 {% endblock %}

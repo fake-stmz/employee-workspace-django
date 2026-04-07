@@ -1,37 +1,40 @@
 {% extends 'base.html' %}
+{% block page_title %}Почта{% endblock %}
 
 {% block content %}
 
-<h2>Email письма</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-envelope"></i> Почта</h2>
+    <a href="{% url 'email_create' %}" class="btn btn-primary">
+        <i class="bi bi-pencil-square"></i> Новое письмо
+    </a>
+</div>
 
-<a href="{% url 'email_create' %}" class="btn btn-primary mb-3">
-    Новое письмо
-</a>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Тема</th>
-            <th>Кому</th>
-            <th>От</th>
-            <th>Дата</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        {% for email in emails %}
-        <tr>
-            <td>{{ email.subject }}</td>
-            <td>{{ email.receiver_email }}</td>
-            <td>{{ email.sender_email }}</td>
-            <td>{{ email.sent_at }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4">Нет писем</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Тема</th>
+                    <th>Кому</th>
+                    <th>От</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for email in emails %}
+                <tr>
+                    <td><strong>{{ email.subject }}</strong></td>
+                    <td>{{ email.receiver_email }}</td>
+                    <td>{{ email.sender_email }}</td>
+                    <td>{{ email.sent_at|date:"d.m.Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center py-5 text-muted">Нет писем</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {% endblock %}
