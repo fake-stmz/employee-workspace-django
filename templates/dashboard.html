@@ -1,29 +1,144 @@
 {% extends 'base.html' %}
+{% block page_title %}Дашборд{% endblock %}
 
 {% block content %}
 
-<h2>Задачи</h2>
+<div class="mb-5">
+    <h1 class="display-5 fw-bold">Добро пожаловать, {{ user.first_name|default:user.username }}!</h1>
+    <p class="text-muted lead">Обзор рабочего пространства</p>
+</div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Название</th>
-            <th>Статус</th>
-            <th>Назначено</th>
-            <th>До</th>
-        </tr>
-    </thead>
+<!-- Статистические карточки -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted">Всего задач</h6>
+                        <h2 class="mb-0">{{ total_tasks }}</h2>
+                    </div>
+                    <i class="bi bi-list-check text-primary fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted">Мои задачи</h6>
+                        <h2 class="mb-0 text-primary">{{ my_tasks }}</h2>
+                    </div>
+                    <i class="bi bi-person-check text-primary fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted">Выполнено</h6>
+                        <h2 class="mb-0 text-success">{{ completed_tasks }}</h2>
+                    </div>
+                    <i class="bi bi-check-circle text-success fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm border-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted">Просрочено</h6>
+                        <h2 class="mb-0 text-danger">{{ overdue_tasks }}</h2>
+                    </div>
+                    <i class="bi bi-exclamation-triangle text-danger fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <tbody>
-        {% for task in tasks %}
-        <tr>
-            <td>{{ task.title }}</td>
-            <td>{{ task.status }}</td>
-            <td>{{ task.assigned_to }}</td>
-            <td>{{ task.due_date }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="row g-4">
+    <!-- График -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Распределение задач по статусам</h5>
+            </div>
+            <div class="card-body text-center p-4">
+                <img src="{{ chart_url }}" alt="Статистика задач" class="img-fluid rounded" style="max-height: 380px;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Последние задачи -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between">
+                <h5 class="mb-0">Последние задачи</h5>
+                <a href="{% url 'task_list' %}" class="btn btn-sm btn-outline-primary">Все задачи →</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Задача</th>
+                            <th>Статус</th>
+                            <th>Срок</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in recent_tasks %}
+                        <tr>
+                            <td><strong>{{ task.title|truncatechars:35 }}</strong></td>
+                            <td>
+                                <span class="badge 
+                                    {% if task.status == 'new' %}bg-primary
+                                    {% elif task.status == 'progress' %}bg-warning text-dark
+                                    {% else %}bg-success{% endif %}">
+                                    {{ task.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="{% if task.due_date and task.due_date < now %}text-danger fw-bold{% endif %}">
+                                {{ task.due_date|date:"d.m.Y"|default:"—" }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center py-4 text-muted">Нет задач</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Быстрые действия -->
+<div class="mt-5">
+    <h5 class="mb-3">Быстрые действия</h5>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <a href="{% url 'task_create' %}" class="btn btn-primary w-100 py-3">
+                <i class="bi bi-plus-circle fs-4"></i><br>Новая задача
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'wiki_create' %}" class="btn btn-outline-primary w-100 py-3">
+                <i class="bi bi-book fs-4"></i><br>Новая статья в Вики
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'email_create' %}" class="btn btn-outline-primary w-100 py-3">
+                <i class="bi bi-envelope fs-4"></i><br>Написать письмо
+            </a>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
