@@ -1,3 +1,34 @@
 from django.db import models
+from django.utils import timezone
 
-# Create your models here.
+
+class SoftDeletableModel(models.Model):
+    """Абстрактная модель для мягкого удаления"""
+    deleted_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата удаления")
+
+    class Meta:
+        abstract = True
+
+    def soft_delete(self):
+        self.deleted_at = timezone.now()
+        self.save()
+
+    def restore(self):
+        self.deleted_at = None
+        self.save()
+
+    @property
+    def is_deleted(self):
+        return self.deleted_at is not None
+
+
+class SoftDeletableManager(models.Manager):
+    """Менеджер, который по умолчанию скрывает удалённые записи"""
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+
+class AllObjectsManager(models.Manager):
+    """Менеджер для доступа ко всем записям (включая удалённые)"""
+    def get_queryset(self):
+        return super().get_queryset()

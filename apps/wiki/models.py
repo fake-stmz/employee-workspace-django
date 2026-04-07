@@ -1,8 +1,12 @@
 from django.db import models
 from apps.employees.models import Employee
+from apps.core.models import SoftDeletableModel, SoftDeletableManager, AllObjectsManager
 
 
-class WikiPage(models.Model):
+class WikiPage(SoftDeletableModel):
+
+    objects = SoftDeletableManager()
+    all_objects = AllObjectsManager()
 
     title = models.CharField(max_length=255, verbose_name="Название")
     content = models.TextField(verbose_name="Содержание")

@@ -1,6 +1,7 @@
 from django.db import models
 from apps.employees.models import Employee
 from apps.clients.models import Client
+from apps.core.models import SoftDeletableModel, SoftDeletableManager, AllObjectsManager
 
 
 class Project(models.Model):
@@ -14,7 +15,10 @@ class Project(models.Model):
         return self.name
 
 
-class Task(models.Model):
+class Task(SoftDeletableModel):
+
+    objects = SoftDeletableManager()
+    all_objects = AllObjectsManager()
 
     STATUS_CHOICES = [
         ("new", "Новое"),
