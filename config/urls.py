@@ -8,6 +8,7 @@ from apps.clients.views import *
 from apps.employees.views import *
 from apps.wiki.views import *
 from apps.mail.views import *
+from apps.core.views import dashboard
 
 router = DefaultRouter()
 router.register(r"tasks", TaskViewSet)
