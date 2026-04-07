@@ -2,6 +2,26 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import WikiPage
 from .forms import WikiPageForm
+from django.db import models
+from rest_framework import viewsets
+from .serializers import WikiPageSerializer
+
+
+
+class WikiViewSet(viewsets.ModelViewSet):
+    queryset = WikiPage.objects.all()
+    serializer_class = WikiPageSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search = self.request.query_params.get('search')
+        
+        if search:
+            queryset = queryset.filter(
+                models.Q(title__icontains=search) |
+                models.Q(content__icontains=search)
+            )
+        return queryset.order_by('-created_at')
 
 
 @login_required

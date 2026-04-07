@@ -14,6 +14,7 @@ router.register(r"tasks", TaskViewSet)
 router.register(r"projects", ProjectViewSet)
 router.register(r"clients", ClientViewSet)
 router.register(r"employees", EmployeeViewSet)
+router.register(r"wiki", WikiViewSet)
 
 urlpatterns = [
     # Стандартная админ-панель Django
