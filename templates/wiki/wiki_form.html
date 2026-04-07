@@ -1,25 +1,39 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
+{% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
 
-<h2>{{ title }}</h2>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
 
-<form method="post">
-    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Название страницы</label>
+                        {{ form.title|add_class:"form-control" }}
+                    </div>
 
-    <div class="mb-3">
-        {{ form.title.label_tag }}
-        {{ form.title }}
+                    <div class="mb-3">
+                        <label class="form-label">Содержание</label>
+                        {{ form.content|add_class:"form-control" }}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-save"></i> Сохранить
+                        </button>
+                        <a href="{% url 'wiki_list' %}" class="btn btn-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-
-    <div class="mb-3">
-        {{ form.content.label_tag }}
-        {{ form.content }}
-    </div>
-
-    <button type="submit" class="btn btn-primary">Сохранить</button>
-    <a href="{% url 'wiki_list' %}" class="btn btn-secondary">Отмена</a>
-
-</form>
+</div>
 
 {% endblock %}
