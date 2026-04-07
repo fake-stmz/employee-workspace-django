@@ -27,6 +27,7 @@ class TaskCommentViewSet(viewsets.ModelViewSet):
 
 
 
+@login_required
 def task_list(request):
 
     if request.user.groups.filter(name='Менеджер').exists():
