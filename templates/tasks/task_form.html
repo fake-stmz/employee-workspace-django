@@ -1,50 +1,66 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
+{% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
 
-<h2>{{ title }}</h2>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
 
-<form method="post">
-    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Название задачи</label>
+                            {{ form.title|add_class:"form-control" }}
+                        </div>
 
-    <div class="mb-3">
-        {{ form.title.label_tag }}
-        {{ form.title }}
+                        <div class="col-md-6">
+                            <label class="form-label">Статус</label>
+                            {{ form.status|add_class:"form-select" }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Срок выполнения</label>
+                            {{ form.due_date|add_class:"form-control" }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Ответственный</label>
+                            {{ form.assigned_to|add_class:"form-select" }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Проект</label>
+                            {{ form.project|add_class:"form-select" }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Клиент</label>
+                            {{ form.client|add_class:"form-select" }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Описание</label>
+                            {{ form.description|add_class:"form-control" }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-success px-4">
+                            <i class="bi bi-save"></i> Сохранить
+                        </button>
+                        <a href="{% url 'task_list' %}" class="btn btn-secondary px-4">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-
-    <div class="mb-3">
-        {{ form.description.label_tag }}
-        {{ form.description }}
-    </div>
-
-    <div class="mb-3">
-        {{ form.status.label_tag }}
-        {{ form.status }}
-    </div>
-
-    <div class="mb-3">
-        {{ form.assigned_to.label_tag }}
-        {{ form.assigned_to }}
-    </div>
-
-    <div class="mb-3">
-        {{ form.project.label_tag }}
-        {{ form.project }}
-    </div>
-
-    <div class="mb-3">
-        {{ form.client.label_tag }}
-        {{ form.client }}
-    </div>
-
-    <div class="mb-3">
-        {{ form.due_date.label_tag }}
-        {{ form.due_date }}
-    </div>
-
-    <button type="submit" class="btn btn-primary">Сохранить</button>
-    <a href="{% url 'task_list' %}" class="btn btn-secondary">Отмена</a>
-
-</form>
+</div>
 
 {% endblock %}

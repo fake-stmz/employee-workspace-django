@@ -1,49 +1,77 @@
 {% extends 'base.html' %}
+{% block page_title %}Задачи{% endblock %}
 
 {% block content %}
 
-<h2>Задачи</h2>
-
-<div class="mb-3">
-    <a href="?status=new" class="btn btn-secondary">Новые</a>
-    <a href="?status=progress" class="btn btn-warning">В процессе</a>
-    <a href="?status=done" class="btn btn-success">Выполненные</a>
-    <a href="/tasks/" class="btn btn-dark">Все</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-check2-square"></i> Задачи</h2>
+    <a href="{% url 'task_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Новая задача
+    </a>
 </div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Название</th>
-            <th>Статус</th>
-            <th>Ответственный</th>
-            <th>До</th>
-            <th>Действия</th>
-        </tr>
-    </thead>
+<!-- Фильтры -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <select class="form-select" id="statusFilter">
+                    <option value="">Все статусы</option>
+                    <option value="new">Новое</option>
+                    <option value="progress">В процессе</option>
+                    <option value="done">Выполнено</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <tbody>
-        {% for task in tasks %}
-        <tr>
-            <td>{{ task.title }}</td>
-            <td>{{ task.get_status_display }}</td>
-            <td>{{ task.assigned_to }}</td>
-            <td>{{ task.due_date }}</td>
-            <td>
-                <a href="{% url 'task_update' task.id %}" class="btn btn-sm btn-warning">Редактировать</a>
-                <a href="{% url 'task_delete' task.id %}" class="btn btn-sm btn-danger">Удалить</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4">Нет задач</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<a href="{% url 'task_create' %}" class="btn btn-primary mb-3">
-    Создать задачу
-</a>
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Название</th>
+                    <th>Статус</th>
+                    <th>Ответственный</th>
+                    <th>Срок</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td><strong>{{ task.title }}</strong></td>
+                    <td>
+                        <span class="badge 
+                            {% if task.status == 'new' %}bg-primary
+                            {% elif task.status == 'progress' %}bg-warning text-dark
+                            {% elif task.status == 'done' %}bg-success{% endif %}">
+                            {{ task.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ task.assigned_to|default:"— " }}</td>
+                    <td>{{ task.due_date|date:"d.m.Y H:i"|default:"—" }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'task_update' task.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox" style="font-size: 2rem;"></i><br>
+                        Пока нет задач
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {% endblock %}
