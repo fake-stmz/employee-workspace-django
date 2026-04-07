@@ -102,14 +102,11 @@ def task_update(request, pk):
 @login_required
 def task_delete(request, pk):
 
-    task = get_object_or_404(Task, pk=pk)
+    task = get_object_or_404(Task.all_objects, pk=pk)
 
     if request.method == "POST":
-        task.delete()
+        task.soft_delete()
         return redirect("task_list")
     
-    context = {
-        "task": task
-    }
-
+    context = {"task": task}
     return render(request, "tasks/task_confirm_delete.html", context)

@@ -92,14 +92,11 @@ def wiki_update(request, pk):
 @login_required
 def wiki_delete(request, pk):
 
-    page = get_object_or_404(WikiPage, pk=pk)
+    page = get_object_or_404(WikiPage.all_objects, pk=pk)
 
     if request.method == "POST":
-        page.delete()
+        page.soft_delete()
         return redirect("wiki_list")
     
-    context = {
-        "page": page
-    }
-
+    context = {"page": page}
     return render(request, "wiki/wiki_confirm_delete.html", context)
