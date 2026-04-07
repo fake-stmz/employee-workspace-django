@@ -8,7 +8,7 @@ from apps.clients.views import *
 from apps.employees.views import *
 from apps.wiki.views import *
 from apps.mail.views import *
-from apps.core.views import dashboard
+from apps.core.views import *
 
 router = DefaultRouter()
 router.register(r"tasks", TaskViewSet)
@@ -48,4 +48,6 @@ urlpatterns = [
     # Почта (временная заглушка)
     path('mail/', email_list, name='email_list'),
     path('mail/create/', email_create, name='email_create'),
+    # Удаленные записи
+    path('deleted/', deleted_items, name='deleted_items'),
 ]

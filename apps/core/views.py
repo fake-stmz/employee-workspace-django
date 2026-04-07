@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from apps.tasks.models import Task
+from apps.wiki.models import WikiPage
 from django.db.models import Count
 from django.utils import timezone
 import matplotlib.pyplot as plt
@@ -58,3 +59,19 @@ def dashboard(request):
     }
     
     return render(request, 'dashboard.html', context)
+
+
+@login_required
+def deleted_items(request):
+    """Корзина удалённых записей (только для менеджеров)"""
+    if not request.user.is_superuser:
+        return redirect('dashboard')
+
+    deleted_tasks = Task.all_objects.filter(deleted_at__isnull=False)
+    deleted_wiki = WikiPage.all_objects.filter(deleted_at__isnull=False)
+
+    context = {
+        'deleted_tasks': deleted_tasks,
+        'deleted_wiki': deleted_wiki,
+    }
+    return render(request, 'deleted_items.html', context)
