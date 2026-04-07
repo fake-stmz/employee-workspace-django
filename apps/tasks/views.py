@@ -14,6 +14,13 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["status", "assigned_to", "project"]
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(title__icontains=search)
+        return queryset
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
