@@ -123,9 +123,55 @@
     </div>
 </div>
 
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11000;">
+    <div id="djangoToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div id="toastIcon" class="toast-body d-flex align-items-center"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+        </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+
+<script>
+    // Показать toast из Django messages
+    function showToast(message, level = 'success') {
+        const toastEl = document.getElementById('djangoToast');
+        const toastBody = document.getElementById('toastIcon');
+        
+        // Очищаем предыдущие классы
+        toastEl.className = 'toast align-items-center border-0';
+
+        if (level === 'success') {
+            toastEl.classList.add('bg-success', 'text-white');
+            toastBody.innerHTML = `<i class="bi bi-check-circle me-2"></i>${message}`;
+        } else if (level === 'error') {
+            toastEl.classList.add('bg-danger', 'text-white');
+            toastBody.innerHTML = `<i class="bi bi-x-circle me-2"></i>${message}`;
+        } else if (level === 'warning') {
+            toastEl.classList.add('bg-warning', 'text-dark');
+            toastBody.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${message}`;
+        } else {
+            toastEl.classList.add('bg-info', 'text-white');
+            toastBody.innerHTML = `<i class="bi bi-info-circle me-2"></i>${message}`;
+        }
+
+        const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+        toast.show();
+    }
+
+    // Автоматически показываем все messages из Django при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function () {
+        {% if messages %}
+            {% for message in messages %}
+                showToast("{{ message|escapejs }}", "{{ message.tags }}");
+            {% endfor %}
+        {% endif %}
+    });
+</script>
 
 {% block extra_js %}{% endblock %}
 </body>

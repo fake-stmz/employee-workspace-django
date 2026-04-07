@@ -5,7 +5,7 @@ from .forms import WikiPageForm
 from django.db import models
 from rest_framework import viewsets
 from .serializers import WikiPageSerializer
-
+from django.contrib import messages
 
 
 class WikiViewSet(viewsets.ModelViewSet):
@@ -56,6 +56,7 @@ def wiki_create(request):
             page = form.save(commit=False)
             page.author = request.user.employee
             page.save()
+            messages.success(request, 'Вики страница успешно создана!')
             return redirect("wiki_list")
     else:
         form = WikiPageForm()
@@ -77,6 +78,7 @@ def wiki_update(request, pk):
         form = WikiPageForm(request.POST, instance=page)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Вики страница успешно обновлена!')
             return redirect("wiki_list")
     else:
         form = WikiPageForm(instance=page)
@@ -96,6 +98,7 @@ def wiki_delete(request, pk):
 
     if request.method == "POST":
         page.soft_delete()
+        messages.success(request, f'Страница "{page.title}" перемещена в корзину.')
         return redirect("wiki_list")
     
     context = {"page": page}

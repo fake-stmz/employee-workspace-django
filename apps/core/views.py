@@ -93,6 +93,7 @@ def restore_item(request, model_name, pk):
         return redirect('deleted_items')
 
     item.restore()
+    messages.success(request, f'Запись успешно восстановлена!')
     return redirect('deleted_items')
 
 
@@ -116,7 +117,6 @@ def permanent_delete(request, model_name, pk):
         messages.success(request, f'Запись "{item_name}" полностью удалена.')
         return redirect('deleted_items')
 
-    # GET — показываем подтверждение
     context = {
         'item': item,
         'model_name': model_name,

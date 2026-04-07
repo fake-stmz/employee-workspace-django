@@ -6,6 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .forms import TaskForm
 from django.contrib.auth.decorators import login_required
 from apps.employees.models import Employee
+from django.contrib import messages
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -60,6 +61,7 @@ def task_create(request):
         form = TaskForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Задача успешно создана!')
             return redirect("task_list")
     else:
         form = TaskForm()
@@ -84,6 +86,7 @@ def task_update(request, pk):
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Задача успешно обновлена!')
             return redirect("task_list")
     else:
         form = TaskForm(instance=task)
@@ -106,6 +109,7 @@ def task_delete(request, pk):
 
     if request.method == "POST":
         task.soft_delete()
+        messages.success(request, f'Задача "{task.title}" перемещена в корзину.')
         return redirect("task_list")
     
     context = {"task": task}
