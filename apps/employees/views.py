@@ -9,12 +9,22 @@ from django.utils import timezone
 import matplotlib.pyplot as plt
 import io
 import base64
-from datetime import timedelta
+from django.db import models
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                models.Q(full_name__icontains=search) | 
+                models.Q(email__icontains=search)
+            )
+        return queryset
 
 
 @login_required

@@ -5,12 +5,27 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-people"></i> Сотрудники</h2>
-    <!-- Позже добавим кнопку "Добавить сотрудника" -->
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Поиск по ФИО или email...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button id="resetFilters" class="btn btn-outline-secondary w-100">Сбросить</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="card">
     <div class="card-body p-0">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0" id="employeesTable">
             <thead class="table-light">
                 <tr>
                     <th>ФИО</th>
@@ -19,24 +34,60 @@
                     <th>Отдел</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for emp in employees %}
-                <tr>
-                    <td><strong>{{ emp.full_name }}</strong></td>
-                    <td>{{ emp.email }}</td>
-                    <td>{{ emp.position }}</td>
-                    <td>{{ emp.department|default:"—" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center py-5 text-muted">
-                        Нет сотрудников
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
+            <tbody id="employeesTableBody"></tbody>
         </table>
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const resetBtn = document.getElementById('resetFilters');
+    const tableBody = document.getElementById('employeesTableBody');
+
+    let debounceTimer;
+
+    function loadEmployees(search = '') {
+        let url = `/api/employees/?format=json`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                tableBody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-muted">Ничего не найдено</td></tr>`;
+                    return;
+                }
+
+                data.forEach(emp => {
+                    const row = `
+                        <tr>
+                            <td><strong>${emp.full_name}</strong></td>
+                            <td>${emp.email}</td>
+                            <td>${emp.position}</td>
+                            <td>${emp.department || '—'}</td>
+                        </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            });
+    }
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => loadEmployees(searchInput.value), 300);
+    });
+
+    resetBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        loadEmployees();
+    });
+
+    loadEmployees();
+});
+</script>
 {% endblock %}
