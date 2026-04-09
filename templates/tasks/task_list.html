@@ -66,7 +66,6 @@
 
 {% block extra_js %}
 <script>
-// Live filtering
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
@@ -77,7 +76,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function loadTasks(search = '', status = '') {
         let url = `/api/tasks/?format=json`;
-        
         if (search) url += `&search=${encodeURIComponent(search)}`;
         if (status) url += `&status=${status}`;
 
@@ -106,7 +104,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const row = `
                         <tr>
-                            <td><strong>${task.title}</strong></td>
+                            <td>
+                                <a href="/tasks/${task.id}/" 
+                                   class="text-decoration-none fw-bold">
+                                    ${task.title}
+                                </a>
+                            </td>
                             <td>
                                 <span class="badge ${statusBadge}">
                                     ${task.get_status_display || task.status}
@@ -115,10 +118,19 @@ document.addEventListener('DOMContentLoaded', function() {
                             <td>${assignedName}</td>
                             <td>${dueDate}</td>
                             <td class="text-end">
-                                <a href="/tasks/${task.id}/edit/" class="btn btn-sm btn-outline-primary">
+                                <!-- Кнопка "Просмотр" -->
+                                <a href="/tasks/${task.id}/" 
+                                   class="btn btn-sm btn-outline-info me-1">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <!-- Редактировать -->
+                                <a href="/tasks/${task.id}/edit/" 
+                                   class="btn btn-sm btn-outline-primary me-1">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href="/tasks/${task.id}/delete/" class="btn btn-sm btn-outline-danger">
+                                <!-- Удалить -->
+                                <a href="/tasks/${task.id}/delete/" 
+                                   class="btn btn-sm btn-outline-danger">
                                     <i class="bi bi-trash"></i>
                                 </a>
                             </td>
@@ -126,32 +138,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     tableBody.innerHTML += row;
                 });
             })
-            .catch(error => {
-                console.error('Error:', error);
-                tableBody.innerHTML = `
-                    <tr><td colspan="5" class="text-center py-4 text-danger">
-                        Ошибка загрузки данных
-                    </td></tr>`;
-            });
+            .catch(error => console.error('Error:', error));
     }
 
-    // Debounce search
-    searchInput.addEventListener('input', function() {
+    // Debounce + обработчики
+    searchInput.addEventListener('input', () => {
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            loadTasks(searchInput.value, statusFilter.value);
-        }, 300);
+        debounceTimer = setTimeout(() => loadTasks(searchInput.value, statusFilter.value), 300);
     });
 
     statusFilter.addEventListener('change', () => loadTasks(searchInput.value, statusFilter.value));
-    
+
     resetBtn.addEventListener('click', () => {
         searchInput.value = '';
         statusFilter.value = '';
         loadTasks();
     });
 
-    // Initial load
+    // Первая загрузка
     loadTasks();
 });
 </script>

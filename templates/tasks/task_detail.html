@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block page_title %}Задача #{{ task.id }}{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <h4>{{ task.title }}</h4>
+        <span class="badge {% if task.status == 'done' %}bg-success{% elif task.status == 'progress' %}bg-warning text-dark{% else %}bg-primary{% endif %} d-inline-flex align-items-center justify-content-center py-1">
+            {{ task.get_status_display }}
+        </span>
+    </div>
+    <div class="card-body">
+        <p><strong>ID записи:</strong> {{ task.id }}</p>
+        <p><strong>Срок:</strong> {{ task.due_date|date:"d.m.Y H:i"|default:"—" }}</p>
+        <p><strong>Ответственный:</strong> {{ task.assigned_to|default:"—" }}</p>
+        <p><strong>Клиент:</strong> {{ task.client|default:"—" }}</p>
+        
+        <hr>
+        <h5>Описание</h5>
+        <p>{{ task.description|linebreaks|default:"<em>Нет описания</em>" }}</p>
+
+        <!-- Прикреплённые файлы -->
+        <h5 class="mt-4">Прикреплённые файлы</h5>
+        {% if documents %}
+        <div class="list-group">
+            {% for doc in documents %}
+            <a href="{{ doc.file.url }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" target="_blank">
+                {{ doc.title }}
+                <span class="badge bg-secondary">{{ doc.file.size|filesizeformat }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">Файлы не прикреплены</p>
+        {% endif %}
+    </div>
+    <div class="card-footer">
+        <a href="{% url 'task_update' task.pk %}" class="btn btn-primary">Редактировать</a>
+        <a href="{% url 'task_list' %}" class="btn btn-secondary">Назад к списку</a>
+    </div>
+</div>
+
+{% endblock %}

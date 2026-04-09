@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from rest_framework.routers import DefaultRouter
+from django.conf import settings
+from django.conf.urls.static import static
 
 from apps.tasks.views import *
 from apps.clients.views import *
@@ -32,6 +34,7 @@ urlpatterns = [
     path('', dashboard, name='dashboard'),
     # Задачи
     path('tasks/', task_list, name='task_list'),
+    path('tasks/<int:pk>/', task_detail, name='task_detail'),
     path('tasks/create/', task_create, name='task_create'),
     path('tasks/<int:pk>/edit/', task_update, name='task_update'),
     path('tasks/<int:pk>/delete/', task_delete, name='task_delete'),
@@ -55,3 +58,6 @@ urlpatterns = [
     # Полное удаление
     path('permanent-delete/<str:model_name>/<int:pk>/', permanent_delete, name='permanent_delete'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

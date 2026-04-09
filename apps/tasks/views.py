@@ -123,3 +123,15 @@ def task_delete(request, pk):
     
     context = {"task": task}
     return render(request, "tasks/task_confirm_delete.html", context)
+
+
+@login_required
+def task_detail(request, pk):
+    task = get_object_or_404(Task, pk=pk)
+    documents = task.document_set.all()
+
+    context = {
+        "task": task,
+        "documents": documents,
+    }
+    return render(request, "tasks/task_detail.html", context)
