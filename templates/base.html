@@ -171,7 +171,63 @@
             {% endfor %}
         {% endif %}
     });
+
+    // Модальное окно удаления
+    function showDeleteModal(url, itemName) {
+        document.getElementById('modalBody').innerHTML = `
+            <p>Вы действительно хотите удалить:</p>
+            <p class="fw-bold">${itemName}?</p>
+        `;
+        document.getElementById('deleteForm').action = url;
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+
+    // Модальное окно для ПОЛНОГО удаления
+    function showPermanentDeleteModal(modelName, pk, itemName) {
+        document.getElementById('modalTitle').textContent = "ПОЛНОЕ УДАЛЕНИЕ";
+        document.getElementById('modalBody').innerHTML = `
+            <div class="text-center">
+                <i class="bi bi-exclamation-octagon text-danger" style="font-size: 3rem;"></i>
+                <p class="mt-3 mb-1 text-danger fw-bold">ВНИМАНИЕ! Действие необратимо</p>
+                <p>Вы собираетесь полностью удалить:</p>
+                <p class="fs-5 fw-bold">"${itemName}"</p>
+                <p class="text-muted small">Запись будет удалена из базы навсегда.</p>
+            </div>
+        `;
+
+        // Меняем action формы
+        const form = document.getElementById('deleteForm');
+        form.action = `/permanent-delete/${modelName}/${pk}/`;
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
 </script>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-danger" id="modalTitle">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Заполняется через JS -->
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">
+                        <i class="bi bi-trash"></i> Удалить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% block extra_js %}{% endblock %}
 </body>

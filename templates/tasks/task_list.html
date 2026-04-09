@@ -127,9 +127,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <a href="/tasks/${task.id}/edit/" class="btn btn-sm btn-outline-primary me-1">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href="/tasks/${task.id}/delete/" class="btn btn-sm btn-outline-danger">
+                                <button onclick="showDeleteModal('/tasks/${task.id}/delete/', 'Задачу «${task.title}»')" 
+                                        class="btn btn-sm btn-outline-danger">
                                     <i class="bi bi-trash"></i>
-                                </a>
+                                </button>
                             </td>
                         </tr>`;
                     tableBody.innerHTML += row;

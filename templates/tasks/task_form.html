@@ -80,7 +80,7 @@
                         <button type="submit" class="btn btn-success px-4">
                             <i class="bi bi-save"></i> Сохранить изменения
                         </button>
-                        <a href="{% url 'task_detail' task.pk %}" class="btn btn-secondary px-4">
+                        <a href="{% if task %}{% url 'task_detail' task.pk %}{% else %}{% url 'task_list' %}{% endif %}" class="btn btn-secondary px-4">
                             Отмена
                         </a>
                     </div>

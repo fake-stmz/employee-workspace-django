@@ -105,21 +105,16 @@ def permanent_delete(request, model_name, pk):
 
     if model_name == 'task':
         item = get_object_or_404(Task.all_objects, pk=pk)
-        item_name = item.title
     elif model_name == 'wiki':
         item = get_object_or_404(WikiPage.all_objects, pk=pk)
-        item_name = item.title
     else:
         return redirect('deleted_items')
 
     if request.method == "POST":
-        item.delete()  # Полное удаление из базы
-        messages.success(request, f'Запись "{item_name}" полностью удалена.')
+        item_name = item.title
+        item.delete()
+        messages.success(request, f'Запись "{item_name}" была полностью удалена навсегда.')
         return redirect('deleted_items')
 
-    context = {
-        'item': item,
-        'model_name': model_name,
-        'item_name': item_name,
-    }
-    return render(request, 'permanent_delete_confirm.html', context)
+    # Если вдруг GET — просто редирект (на всякий случай)
+    return redirect('deleted_items')
