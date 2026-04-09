@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from apps.employees.models import Employee
 from apps.documents.models import Document
 from django.contrib import messages
+from apps.core.decorators import handle_exceptions
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -35,7 +36,7 @@ class TaskCommentViewSet(viewsets.ModelViewSet):
     serializer_class = TaskCommentSerializer
 
 
-
+@handle_exceptions
 @login_required
 def task_list(request):
 
@@ -55,8 +56,14 @@ def task_list(request):
     return render(request, "tasks/task_list.html", context)
 
 
+@handle_exceptions
 @login_required
 def task_create(request):
+    
+    # Тест обработки исключений
+    #if request.GET.get('test_error'):
+    #    raise ValueError("Это тестовая ошибка для проверки сообщений!")
+    
     if request.method == "POST":
         form = TaskForm(request.POST)
         if form.is_valid():
@@ -80,6 +87,7 @@ def task_create(request):
     return render(request, "tasks/task_form.html", context)
 
 
+@handle_exceptions
 @login_required
 def task_update(request, pk):
     task = get_object_or_404(Task, pk=pk)
@@ -119,6 +127,7 @@ def task_update(request, pk):
     return render(request, "tasks/task_form.html", context)
 
 
+@handle_exceptions
 @login_required
 def task_delete(request, pk):
 
@@ -133,6 +142,7 @@ def task_delete(request, pk):
     return render(request, "tasks/task_confirm_delete.html", context)
 
 
+@handle_exceptions
 @login_required
 def task_detail(request, pk):
     task = get_object_or_404(Task, pk=pk)

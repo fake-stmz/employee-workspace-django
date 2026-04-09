@@ -4,8 +4,10 @@ from .models import EmailMessage
 from .forms import EmailMessageForm
 from apps.employees.models import Employee
 from django.utils import timezone
+from apps.core.decorators import handle_exceptions
 
 
+@handle_exceptions
 @login_required
 def email_list(request):
 
@@ -23,6 +25,7 @@ def email_list(request):
     return render(request, "mail/email_list.html", context)
 
 
+@handle_exceptions
 @login_required
 def email_create(request):
 

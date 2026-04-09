@@ -6,6 +6,7 @@ from django.db import models
 from rest_framework import viewsets
 from .serializers import WikiPageSerializer
 from django.contrib import messages
+from apps.core.decorators import handle_exceptions
 
 
 class WikiViewSet(viewsets.ModelViewSet):
@@ -24,6 +25,7 @@ class WikiViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-created_at')
 
 
+@handle_exceptions
 @login_required
 def wiki_list(request):
     pages = WikiPage.objects.all().order_by("-created_at")
@@ -35,6 +37,7 @@ def wiki_list(request):
     return render(request, "wiki/wiki_list.html", context)
 
 
+@handle_exceptions
 @login_required
 def wiki_page_view(request, pk):
 
@@ -47,6 +50,7 @@ def wiki_page_view(request, pk):
     return render(request, "wiki/wiki_page.html", context)
 
 
+@handle_exceptions
 @login_required
 def wiki_create(request):
 
@@ -69,6 +73,7 @@ def wiki_create(request):
     return render(request, "wiki/wiki_form.html", context)
 
 
+@handle_exceptions
 @login_required
 def wiki_update(request, pk):
 
@@ -91,6 +96,7 @@ def wiki_update(request, pk):
     return render(request, "wiki/wiki_form.html", context)
 
 
+@handle_exceptions
 @login_required
 def wiki_delete(request, pk):
 

@@ -4,6 +4,7 @@ from .models import Employee
 from .serializers import EmployeeSerializer
 from django.contrib.auth.decorators import login_required
 from django.db import models
+from apps.core.decorators import handle_exceptions
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
@@ -20,7 +21,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             )
         return queryset
 
-
+@handle_exceptions
 @login_required
 def employee_list(request):
     employees = Employee.objects.all()

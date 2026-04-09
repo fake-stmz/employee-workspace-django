@@ -4,6 +4,7 @@ from .models import Client
 from .serializers import ClientSerializer
 from django.contrib.auth.decorators import login_required
 from django.db import models
+from apps.core.decorators import handle_exceptions
 
 
 class ClientViewSet(viewsets.ModelViewSet):
@@ -23,6 +24,7 @@ class ClientViewSet(viewsets.ModelViewSet):
         return queryset
 
 
+@handle_exceptions
 @login_required
 def client_list(request):
     clients = Client.objects.select_related("manager")

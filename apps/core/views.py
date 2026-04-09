@@ -9,7 +9,10 @@ import base64
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
+from .decorators import handle_exceptions
 
+
+@handle_exceptions
 @login_required
 def dashboard(request):
     now = timezone.now()
@@ -63,6 +66,7 @@ def dashboard(request):
     return render(request, 'dashboard.html', context)
 
 
+@handle_exceptions
 @login_required
 def deleted_items(request):
     """Корзина удалённых записей (только для менеджеров)"""
@@ -79,6 +83,7 @@ def deleted_items(request):
     return render(request, 'deleted_items.html', context)
 
 
+@handle_exceptions
 @login_required
 def restore_item(request, model_name, pk):
     """Восстановление записи"""
@@ -97,6 +102,7 @@ def restore_item(request, model_name, pk):
     return redirect('deleted_items')
 
 
+@handle_exceptions
 @login_required
 def permanent_delete(request, model_name, pk):
     """Полное удаление записи из корзины (только для администраторов)"""
