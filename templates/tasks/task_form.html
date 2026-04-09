@@ -1,53 +1,87 @@
 {% extends 'base.html' %}
 {% load custom_filters %}
+
 {% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
 
 <div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
             <div class="card-header bg-white">
                 <h4 class="mb-0">{{ title }}</h4>
             </div>
             <div class="card-body">
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
 
                     <div class="row g-3">
-                        <div class="col-md-12">
-                            <label class="form-label">Название задачи</label>
+                        <!-- ID записи -->
+                        {% if form.id %}
+                        <div class="col-12">
+                            {{ form.id.label_tag }}
+                            {{ form.id|add_class:"form-control" }}
+                        </div>
+                        {% endif %}
+
+                        <!-- Название -->
+                        <div class="col-12">
+                            {{ form.title.label_tag }}
                             {{ form.title|add_class:"form-control" }}
                         </div>
 
+                        <!-- Статус + Срок -->
                         <div class="col-md-6">
-                            <label class="form-label">Статус</label>
+                            {{ form.status.label_tag }}
                             {{ form.status|add_class:"form-select" }}
                         </div>
-
                         <div class="col-md-6">
-                            <label class="form-label">Срок выполнения</label>
+                            {{ form.due_date.label_tag }}
                             {{ form.due_date|add_class:"form-control" }}
                         </div>
 
+                        <!-- Ответственный + Проект -->
                         <div class="col-md-6">
-                            <label class="form-label">Ответственный</label>
+                            {{ form.assigned_to.label_tag }}
                             {{ form.assigned_to|add_class:"form-select" }}
                         </div>
-
                         <div class="col-md-6">
-                            <label class="form-label">Проект</label>
+                            {{ form.project.label_tag }}
                             {{ form.project|add_class:"form-select" }}
                         </div>
 
+                        <!-- Клиент -->
                         <div class="col-12">
-                            <label class="form-label">Клиент</label>
+                            {{ form.client.label_tag }}
                             {{ form.client|add_class:"form-select" }}
                         </div>
 
+                        <!-- Описание -->
                         <div class="col-12">
-                            <label class="form-label">Описание</label>
+                            {{ form.description.label_tag }}
                             {{ form.description|add_class:"form-control" }}
+                        </div>
+
+                        <!-- Уже прикреплённые файлы -->
+                        {% if task and task.document_set.exists %}
+                        <div class="col-12">
+                            <label class="form-label">Уже прикреплённые файлы</label>
+                            <ul class="list-group mb-3">
+                                {% for doc in task.document_set.all %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{{ doc.file.url }}" target="_blank">{{ doc.title }}</a>
+                                    <small class="text-muted">{{ doc.created_at|date:"d.m.Y H:i" }}</small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <!-- Новые файлы -->
+                        <div class="col-12">
+                            {{ form.files.label_tag }}
+                            {{ form.files|add_class:"form-control" }}
+                            <small class="text-muted">Можно выбрать несколько файлов</small>
                         </div>
                     </div>
 
