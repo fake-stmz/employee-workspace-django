@@ -89,6 +89,13 @@ def task_update(request, pk):
         if form.is_valid():
             task = form.save()
 
+            # Удаляем выбранные файлы
+            files_to_delete = form.cleaned_data.get('delete_files')
+            if files_to_delete:
+                for doc in files_to_delete:
+                    doc.delete()
+
+            # Добавляем новые файлы
             files = request.FILES.getlist('files')
             for file in files:
                 Document.objects.create(
@@ -99,7 +106,8 @@ def task_update(request, pk):
                 )
 
             messages.success(request, 'Задача успешно обновлена!')
-            return redirect("task_list")
+            return redirect("task_detail", pk=task.pk)
+
     else:
         form = TaskForm(instance=task)
 

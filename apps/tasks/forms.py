@@ -1,5 +1,7 @@
 from django import forms
 from .models import Task
+from apps.documents.models import Document
+
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -18,6 +20,13 @@ class TaskForm(forms.ModelForm):
     files = MultipleFileField(
         required=False,
         label="Прикрепить файлы"
+    )
+    
+    delete_files = forms.ModelMultipleChoiceField(
+        queryset=Document.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Удалить файлы"
     )
 
     class Meta:
@@ -48,3 +57,5 @@ class TaskForm(forms.ModelForm):
                 label="ID записи в базе",
                 required=False
             )
+        
+            self.fields['delete_files'].queryset = self.instance.document_set.all()

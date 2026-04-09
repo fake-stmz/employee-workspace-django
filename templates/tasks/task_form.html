@@ -16,7 +16,7 @@
                     {% csrf_token %}
 
                     <div class="row g-3">
-                        <!-- ID записи -->
+                        <!-- ID -->
                         {% if form.id %}
                         <div class="col-12">
                             {{ form.id.label_tag }}
@@ -24,13 +24,11 @@
                         </div>
                         {% endif %}
 
-                        <!-- Название -->
                         <div class="col-12">
                             {{ form.title.label_tag }}
                             {{ form.title|add_class:"form-control" }}
                         </div>
 
-                        <!-- Статус + Срок -->
                         <div class="col-md-6">
                             {{ form.status.label_tag }}
                             {{ form.status|add_class:"form-select" }}
@@ -40,7 +38,6 @@
                             {{ form.due_date|add_class:"form-control" }}
                         </div>
 
-                        <!-- Ответственный + Проект -->
                         <div class="col-md-6">
                             {{ form.assigned_to.label_tag }}
                             {{ form.assigned_to|add_class:"form-select" }}
@@ -50,34 +47,28 @@
                             {{ form.project|add_class:"form-select" }}
                         </div>
 
-                        <!-- Клиент -->
                         <div class="col-12">
                             {{ form.client.label_tag }}
                             {{ form.client|add_class:"form-select" }}
                         </div>
 
-                        <!-- Описание -->
                         <div class="col-12">
                             {{ form.description.label_tag }}
                             {{ form.description|add_class:"form-control" }}
                         </div>
 
-                        <!-- Уже прикреплённые файлы -->
+                        <!-- Уже прикреплённые файлы + возможность удаления -->
                         {% if task and task.document_set.exists %}
                         <div class="col-12">
-                            <label class="form-label">Уже прикреплённые файлы</label>
-                            <ul class="list-group mb-3">
-                                {% for doc in task.document_set.all %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <a href="{{ doc.file.url }}" target="_blank">{{ doc.title }}</a>
-                                    <small class="text-muted">{{ doc.created_at|date:"d.m.Y H:i" }}</small>
-                                </li>
-                                {% endfor %}
-                            </ul>
+                            <label class="form-label">Прикреплённые файлы</label>
+                            <div class="border rounded p-3 bg-light">
+                                {{ form.delete_files }}
+                            </div>
+                            <small class="text-muted">Отметьте файлы, которые нужно удалить</small>
                         </div>
                         {% endif %}
 
-                        <!-- Новые файлы -->
+                        <!-- Загрузка новых файлов -->
                         <div class="col-12">
                             {{ form.files.label_tag }}
                             {{ form.files|add_class:"form-control" }}
@@ -87,9 +78,11 @@
 
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-success px-4">
-                            <i class="bi bi-save"></i> Сохранить
+                            <i class="bi bi-save"></i> Сохранить изменения
                         </button>
-                        <a href="{% url 'task_list' %}" class="btn btn-secondary px-4">Отмена</a>
+                        <a href="{% url 'task_detail' task.pk %}" class="btn btn-secondary px-4">
+                            Отмена
+                        </a>
                     </div>
                 </form>
             </div>
