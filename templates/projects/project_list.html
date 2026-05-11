@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block page_title %}Проекты{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Проекты</h2>
+    <a href="{% url 'project_create' %}" class="btn btn-success">
+        <i class="bi bi-plus-lg"></i> Новый проект
+    </a>
+</div>
+
+<div class="row">
+    {% for project in projects %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ project.name }}</h5>
+                <p class="text-muted">{{ project.description|truncatechars:100|default:"Нет описания" }}</p>
+                
+                <div class="mb-2">
+                    <strong>Менеджер:</strong> {{ project.manager|default:"—" }}
+                </div>
+
+                {% if project.tasks_count %}
+                <small class="text-muted">
+                    {{ project.completed_tasks }} из {{ project.tasks_count }} задач выполнено
+                </small>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'project_detail' project.pk %}" class="btn btn-primary btn-sm w-100">
+                    Открыть проект
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">Пока нет проектов.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

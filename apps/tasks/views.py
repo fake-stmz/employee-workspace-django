@@ -6,6 +6,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .forms import TaskForm
 from django.contrib.auth.decorators import login_required
 from .forms import TaskCommentForm
+from .forms import ProjectForm
+from django.db.models import Count, Q
 from apps.documents.models import Document
 from django.contrib import messages
 from apps.core.decorators import handle_exceptions
@@ -173,3 +175,52 @@ def add_task_comment(request, pk):
             return redirect('task_detail', pk=task.pk)
     
     return redirect('task_detail', pk=task.pk)
+
+
+@handle_exceptions
+@login_required
+def project_list(request):
+    projects = Project.objects.all().annotate(
+        tasks_count=Count('task'),
+        completed_tasks=Count('task', filter=Q(task__status='done'))
+    ).order_by('-created_at')
+
+    context = {
+        'projects': projects,
+    }
+    return render(request, 'projects/project_list.html', context)
+
+
+@handle_exceptions
+@login_required
+def project_detail(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    tasks = Task.objects.filter(project=project).select_related('assigned_to', 'client')
+
+    status_filter = request.GET.get('status')
+    if status_filter:
+        tasks = tasks.filter(status=status_filter)
+
+    context = {
+        'project': project,
+        'tasks': tasks,
+        'total_tasks': tasks.count(),
+        'completed_tasks': tasks.filter(status='done').count(),
+    }
+    return render(request, 'projects/project_detail.html', context)
+
+
+@handle_exceptions
+@login_required
+def project_create(request):
+    if request.method == "POST":
+        form = ProjectForm(request.POST)
+        if form.is_valid():
+            project = form.save()
+            messages.success(request, f'Проект "{project.name}" успешно создан!')
+            return redirect('project_detail', pk=project.pk)
+    else:
+        form = ProjectForm()
+
+    context = {"form": form, "title": "Создать проект"}
+    return render(request, "projects/project_form.html", context)

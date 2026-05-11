@@ -6,9 +6,9 @@ from apps.core.models import SoftDeletableModel, SoftDeletableManager, AllObject
 
 class Project(models.Model):
 
-    name = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    manager = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=255, verbose_name="Название")
+    description = models.TextField(blank=True, verbose_name="Описание")
+    manager = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, verbose_name="Менеджер")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

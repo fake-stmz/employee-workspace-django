@@ -1,5 +1,5 @@
 from django import forms
-from .models import Task, TaskComment
+from .models import Task, TaskComment, Project
 from apps.documents.models import Document
 
 
@@ -71,4 +71,15 @@ class TaskCommentForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Напишите комментарий...'
             })
+        }
+
+
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ['name', 'description', 'manager']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'manager': forms.Select(attrs={'class': 'form-select'}),
         }

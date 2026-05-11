@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block page_title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h4>{{ project.name }}</h4>
+    </div>
+    <div class="card-body">
+        <p><strong>Менеджер:</strong> {{ project.manager|default:"—" }}</p>
+        
+        {% if project.description %}
+        <p><strong>Описание:</strong></p>
+        <div class="border p-3 bg-light rounded">{{ project.description|linebreaks }}</div>
+        {% endif %}
+
+        <div class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5>Задачи проекта ({{ total_tasks }})</h5>
+                <a href="{% url 'task_create' %}" class="btn btn-success btn-sm">+ Добавить задачу</a>
+            </div>
+            
+            {% if tasks %}
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Статус</th>
+                            <th>Ответственный</th>
+                            <th>Срок</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr>
+                            <td><a href="{% url 'task_detail' task.pk %}" class="text-decoration-none fw-bold">{{ task.title }}</a></td>
+                            <td>
+                                {% if task.status == 'done' %}
+                                    <span class="badge bg-success">Выполнено</span>
+                                {% elif task.status == 'progress' %}
+                                    <span class="badge bg-warning text-dark">В процессе</span>
+                                {% elif task.status == 'new' %}
+                                    <span class="badge bg-primary">Новое</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ task.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ task.assigned_to|default:"—" }}</td>
+                            <td>{{ task.due_date|date:"d.m.Y"|default:"—" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-info">В проекте пока нет задач.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
