@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% block title %}Канбан — Employee Workspace{% endblock %}
+{% block page_title %}Канбан-доска{% endblock %}
+
+{% block content %}
+<style>
+  .kanban-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: calc(100vh - 160px);
+  }
+  .kanban-toolbar {
+    flex-shrink: 0;
+  }
+  .kanban-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    flex: 1;
+    min-height: 0;
+  }
+  .kanban-column {
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f0f2f5;
+    min-height: 0;
+  }
+  .kanban-column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+  .kanban-column-header .badge-count {
+    background: rgba(0,0,0,0.15);
+    color: inherit;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .col-new .kanban-column-header    { background: #4361ee; color: #fff; }
+  .col-progress .kanban-column-header { background: #f9a825; color: #1a1a1a; }
+  .col-done .kanban-column-header   { background: #2ecc71; color: #fff; }
+
+  .kanban-cards {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .kanban-cards::-webkit-scrollbar { width: 4px; }
+  .kanban-cards::-webkit-scrollbar-track { background: transparent; }
+  .kanban-cards::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+  /* drop zone highlight */
+  .kanban-cards.drag-over {
+    background: rgba(67, 97, 238, 0.08);
+    border-radius: 8px;
+    outline: 2px dashed #4361ee;
+    outline-offset: -4px;
+  }
+
+  .task-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    cursor: grab;
+    transition: box-shadow 0.15s, transform 0.15s, opacity 0.15s;
+    position: relative;
+    user-select: none;
+  }
+  .task-card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.13);
+    transform: translateY(-1px);
+  }
+  .task-card.dragging {
+    opacity: 0.45;
+    cursor: grabbing;
+  }
+  .task-card-title {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: #212529;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    transition: color 0.15s;
+  }
+  .task-card-title:hover { color: #4361ee; }
+  .task-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.78rem;
+    color: #6c757d;
+  }
+  .task-card-meta span { display: flex; align-items: center; gap: 5px; }
+
+  .task-drag-handle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #ced4da;
+    font-size: 0.8rem;
+    cursor: grab;
+  }
+
+  .empty-column {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: #adb5bd;
+    font-size: 0.85rem;
+    gap: 8px;
+    padding: 20px;
+    text-align: center;
+  }
+  .empty-column i { font-size: 2rem; opacity: 0.5; }
+
+  /* Project filter pills */
+  .project-pills { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .project-pill {
+    border: 1.5px solid #dee2e6;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    background: #fff;
+    color: #495057;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .project-pill:hover { border-color: #4361ee; color: #4361ee; }
+  .project-pill.active { background: #4361ee; border-color: #4361ee; color: #fff; font-weight: 600; }
+
+  /* Loading / save indicator */
+  #kanbanStatus {
+    position: fixed;
+    bottom: 24px;
+    left: calc(260px + 24px);
+    background: #212529;
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    display: none;
+    z-index: 9999;
+    gap: 8px;
+    align-items: center;
+  }
+  #kanbanStatus.visible { display: flex; }
+  #kanbanStatus.error { background: #dc3545; }
+  #kanbanStatus.success { background: #2ecc71; }
+</style>
+
+<div class="kanban-wrapper">
+  <!-- Toolbar -->
+  <div class="kanban-toolbar card">
+    <div class="card-body py-3">
+      <div class="d-flex align-items-center gap-4 flex-wrap">
+        <span class="fw-semibold text-secondary small text-uppercase">Проект:</span>
+        <div class="project-pills">
+          <span class="project-pill active" data-project="">Все проекты</span>
+          {% for project in projects %}
+          <span class="project-pill" data-project="{{ project.id }}">{{ project.name }}</span>
+          {% endfor %}
+        </div>
+        <div class="ms-auto d-flex gap-2">
+          <a href="{% url 'task_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-list-task me-1"></i>Список
+          </a>
+          <a href="{% url 'task_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>Новая задача
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Board -->
+  <div class="kanban-board">
+    <!-- Новое -->
+    <div class="kanban-column col-new" data-status="new">
+      <div class="kanban-column-header">
+        <span><i class="bi bi-circle me-2"></i>Новое</span>
+        <span class="badge-count" id="count-new">0</span>
+      </div>
+      <div class="kanban-cards" id="col-new" data-status="new"></div>
+    </div>
+
+    <!-- В процессе -->
+    <div class="kanban-column col-progress" data-status="progress">
+      <div class="kanban-column-header">
+        <span><i class="bi bi-arrow-clockwise me-2"></i>В процессе</span>
+        <span class="badge-count" id="count-progress">0</span>
+      </div>
+      <div class="kanban-cards" id="col-progress" data-status="progress"></div>
+    </div>
+
+    <!-- Выполнено -->
+    <div class="kanban-column col-done" data-status="done">
+      <div class="kanban-column-header">
+        <span><i class="bi bi-check-circle me-2"></i>Выполнено</span>
+        <span class="badge-count" id="count-done">0</span>
+      </div>
+      <div class="kanban-cards" id="col-done" data-status="done"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Status indicator -->
+<div id="kanbanStatus">
+  <i class="bi bi-arrow-repeat spin"></i>
+  <span id="kanbanStatusText">Сохранение…</span>
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin 0.8s linear infinite; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ─── Data from Django ────────────────────────────────────────────────────────
+const ALL_TASKS = [
+  {% for task in tasks %}
+  {
+    id: {{ task.id }},
+    title: "{{ task.title|escapejs }}",
+    status: "{{ task.status }}",
+    project_id: {% if task.project %}{{ task.project.id }}{% else %}null{% endif %},
+    project_name: "{% if task.project %}{{ task.project.name|escapejs }}{% else %}{% endif %}",
+    assigned_to: "{% if task.assigned_to %}{{ task.assigned_to.full_name|escapejs }}{% else %}{% endif %}",
+    due_date: "{% if task.due_date %}{{ task.due_date|date:'d.m.Y' }}{% else %}{% endif %}",
+  },
+  {% endfor %}
+];
+
+const CSRF_TOKEN = "{{ csrf_token }}";
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let currentProjectFilter = null; // null = all
+let draggedId = null;
+let tasks = [...ALL_TASKS];
+
+// ─── Status indicator ────────────────────────────────────────────────────────
+let statusTimer = null;
+function showStatus(text, type = 'loading') {
+  const el = document.getElementById('kanbanStatus');
+  const textEl = document.getElementById('kanbanStatusText');
+  const icon = el.querySelector('i');
+  el.className = 'visible';
+  if (type === 'error') { el.classList.add('error'); icon.className = 'bi bi-x-circle'; }
+  else if (type === 'success') { el.classList.add('success'); icon.className = 'bi bi-check-circle'; }
+  else { icon.className = 'bi bi-arrow-repeat spin'; }
+  textEl.textContent = text;
+  clearTimeout(statusTimer);
+  if (type !== 'loading') {
+    statusTimer = setTimeout(() => { el.classList.remove('visible'); }, 2000);
+  }
+}
+
+// ─── Render ──────────────────────────────────────────────────────────────────
+function getFilteredTasks() {
+  if (currentProjectFilter === null) return tasks;
+  return tasks.filter(t => String(t.project_id) === String(currentProjectFilter));
+}
+
+function buildCard(task) {
+  const card = document.createElement('div');
+  card.className = 'task-card';
+  card.draggable = true;
+  card.dataset.id = task.id;
+
+  const dueBadge = task.due_date
+    ? `<span><i class="bi bi-calendar3"></i>${task.due_date}</span>` : '';
+  const assignBadge = task.assigned_to
+    ? `<span><i class="bi bi-person"></i>${task.assigned_to}</span>` : '';
+  const projectBadge = task.project_name
+    ? `<span><i class="bi bi-folder"></i>${task.project_name}</span>` : '';
+
+  card.innerHTML = `
+    <i class="bi bi-grip-vertical task-drag-handle"></i>
+    <a href="/tasks/${task.id}/" class="task-card-title">${task.title}</a>
+    <div class="task-card-meta">
+      ${assignBadge}
+      ${dueBadge}
+      ${projectBadge}
+    </div>
+  `;
+
+  // Drag events
+  card.addEventListener('dragstart', onDragStart);
+  card.addEventListener('dragend', onDragEnd);
+  return card;
+}
+
+function renderBoard() {
+  const filtered = getFilteredTasks();
+  const cols = ['new', 'progress', 'done'];
+
+  cols.forEach(status => {
+    const col = document.getElementById(`col-${status}`);
+    col.innerHTML = '';
+    const colTasks = filtered.filter(t => t.status === status);
+
+    document.getElementById(`count-${status}`).textContent = colTasks.length;
+
+    if (colTasks.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-column';
+      empty.innerHTML = `<i class="bi bi-inbox"></i><span>Нет задач</span>`;
+      col.appendChild(empty);
+    } else {
+      colTasks.forEach(t => col.appendChild(buildCard(t)));
+    }
+  });
+}
+
+// ─── Drag & Drop ─────────────────────────────────────────────────────────────
+function onDragStart(e) {
+  draggedId = parseInt(this.dataset.id);
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', draggedId);
+}
+
+function onDragEnd(e) {
+  this.classList.remove('dragging');
+  document.querySelectorAll('.kanban-cards').forEach(c => c.classList.remove('drag-over'));
+}
+
+document.querySelectorAll('.kanban-cards').forEach(col => {
+  col.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    col.classList.add('drag-over');
+  });
+  col.addEventListener('dragleave', e => {
+    if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over');
+  });
+  col.addEventListener('drop', e => {
+    e.preventDefault();
+    col.classList.remove('drag-over');
+    const newStatus = col.dataset.status;
+    const id = parseInt(e.dataTransfer.getData('text/plain'));
+    if (!id) return;
+
+    const task = tasks.find(t => t.id === id);
+    if (!task || task.status === newStatus) return;
+
+    // Optimistic update
+    task.status = newStatus;
+    renderBoard();
+
+    // Persist
+    showStatus('Сохранение…', 'loading');
+    fetch(`/tasks/${id}/update-status/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': CSRF_TOKEN,
+      },
+      body: JSON.stringify({ status: newStatus }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        showStatus('Сохранено', 'success');
+      } else {
+        throw new Error(data.error || 'Ошибка');
+      }
+    })
+    .catch(err => {
+      showStatus('Ошибка сохранения', 'error');
+      // Revert
+      task.status = task.status; // already changed; reload from server would be ideal
+      console.error(err);
+    });
+  });
+});
+
+// ─── Project filter ───────────────────────────────────────────────────────────
+document.querySelectorAll('.project-pill').forEach(pill => {
+  pill.addEventListener('click', function() {
+    document.querySelectorAll('.project-pill').forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+    currentProjectFilter = this.dataset.project || null;
+    renderBoard();
+  });
+});
+
+// ─── Initial render ───────────────────────────────────────────────────────────
+renderBoard();
+</script>
+{% endblock %}

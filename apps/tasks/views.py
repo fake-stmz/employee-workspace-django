@@ -11,6 +11,8 @@ from django.db.models import Count, Q
 from apps.documents.models import Document
 from django.contrib import messages
 from apps.core.decorators import handle_exceptions
+from django.http import JsonResponse
+import json
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -254,3 +256,55 @@ def project_delete(request, pk):
     
     context = {"project": project}
     return render(request, "projects/project_confirm_delete.html", context)
+
+@handle_exceptions
+@login_required
+def task_kanban(request):
+    is_manager = request.user.groups.filter(name='Менеджер').exists()
+
+    if is_manager:
+        tasks = Task.objects.select_related('project', 'assigned_to').all()
+    else:
+        tasks = Task.objects.select_related('project', 'assigned_to').filter(
+            assigned_to__user=request.user
+        )
+
+    projects = Project.objects.order_by('name')
+
+    context = {
+        'tasks': tasks,
+        'projects': projects,
+        'is_manager': is_manager,
+    }
+    return render(request, 'tasks/task_kanban.html', context)
+
+
+@login_required
+def task_update_status(request, pk):
+    if request.method == 'POST':
+        task = get_object_or_404(Task, pk=pk)
+
+        is_manager = request.user.groups.filter(name='Менеджер').exists()
+        is_assigned = (
+            hasattr(request.user, 'employee') and
+            task.assigned_to and
+            task.assigned_to == request.user.employee
+        )
+
+        if not is_manager and not is_assigned:
+            return JsonResponse({'success': False, 'error': 'Нет прав'}, status=403)
+
+        try:
+            data = json.loads(request.body)
+            new_status = data.get('status')
+        except (json.JSONDecodeError, AttributeError):
+            return JsonResponse({'success': False, 'error': 'Неверный формат данных'}, status=400)
+
+        if new_status not in ['new', 'progress', 'done']:
+            return JsonResponse({'success': False, 'error': 'Неверный статус'}, status=400)
+
+        task.status = new_status
+        task.save(update_fields=['status'])
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'success': False, 'error': 'Метод не разрешён'}, status=405)

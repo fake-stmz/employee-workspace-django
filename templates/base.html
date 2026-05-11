@@ -69,8 +69,11 @@
             <a href="{% url 'project_list' %}" class="nav-link {% if 'projects' in request.path %}active{% endif %}">
                 <i class="bi bi-folder me-2"></i> Проекты
             </a>
-            <a href="{% url 'task_list' %}" class="nav-link {% if 'tasks' in request.path %}active{% endif %}">
+            <a href="{% url 'task_list' %}" class="nav-link {% if 'tasks' in request.path and 'kanban' not in request.path %}active{% endif %}">
                 <i class="bi bi-check2-square me-2"></i> Задачи
+            </a>
+            <a href="{% url 'task_kanban' %}" class="nav-link ps-4 {% if 'kanban' in request.path %}active{% endif %}">
+                <i class="bi bi-kanban me-2"></i> Канбан
             </a>
             <a href="{% url 'employee_list' %}" class="nav-link {% if 'employees' in request.path %}active{% endif %}">
                 <i class="bi bi-people me-2"></i> Сотрудники

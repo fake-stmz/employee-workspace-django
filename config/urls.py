@@ -40,11 +40,13 @@ urlpatterns = [
     path('projects/<int:pk>/delete/', project_delete, name='project_delete'),
     # Задачи
     path('tasks/', task_list, name='task_list'),
+    path('tasks/kanban/', task_kanban, name='task_kanban'),
     path('tasks/<int:pk>/', task_detail, name='task_detail'),
     path('tasks/create/', task_create, name='task_create'),
     path('tasks/<int:pk>/edit/', task_update, name='task_update'),
     path('tasks/<int:pk>/delete/', task_delete, name='task_delete'),
     path('tasks/<int:pk>/comment/', add_task_comment, name='add_task_comment'),
+    path('tasks/<int:pk>/update-status/', task_update_status, name='task_update_status'),
     # Сотрудники
     path('employees/', employee_list, name='employee_list'),
     # Клиенты
