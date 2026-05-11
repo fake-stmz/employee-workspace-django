@@ -34,8 +34,10 @@ urlpatterns = [
     path('', dashboard, name='dashboard'),
     # Проекты
     path('projects/', project_list, name='project_list'),
-    path('projects/<int:pk>/', project_detail, name='project_detail'),
     path('projects/create/', project_create, name='project_create'),
+    path('projects/<int:pk>/', project_detail, name='project_detail'),
+    path('projects/<int:pk>/edit/', project_update, name='project_update'),
+    path('projects/<int:pk>/delete/', project_delete, name='project_delete'),
     # Задачи
     path('tasks/', task_list, name='task_list'),
     path('tasks/<int:pk>/', task_detail, name='task_detail'),

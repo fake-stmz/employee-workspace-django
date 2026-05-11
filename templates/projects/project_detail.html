@@ -56,5 +56,10 @@
             {% endif %}
         </div>
     </div>
+
+    <div class="card-footer">
+        <a href="{% url 'project_update' project.pk %}" class="btn btn-primary">Редактировать</a>
+        <a href="{% url 'project_list' %}" class="btn btn-secondary">Назад к списку</a>
+    </div>
 </div>
 {% endblock %}

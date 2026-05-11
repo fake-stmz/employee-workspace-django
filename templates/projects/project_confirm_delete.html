@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block page_title %}Удаление проекта{% endblock %}
+
+{% block content %}
+<div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+            </div>
+            <div class="modal-body">
+                <p>Вы действительно хотите удалить проект <strong>"{{ object.name }}"</strong>?</p>
+                <p class="text-muted">Проект будет перемещён в корзину.</p>
+            </div>
+            <div class="modal-footer">
+                <a href="{% url 'project_detail' object.pk %}" class="btn btn-secondary">Отмена</a>
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

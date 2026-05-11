@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from apps.tasks.models import Task
+from apps.tasks.models import Task, Project
 from apps.wiki.models import WikiPage
 from django.db.models import Count
 from django.utils import timezone
@@ -75,10 +75,12 @@ def deleted_items(request):
 
     deleted_tasks = Task.all_objects.filter(deleted_at__isnull=False)
     deleted_wiki = WikiPage.all_objects.filter(deleted_at__isnull=False)
+    deleted_projects = Project.all_objects.filter(deleted_at__isnull=False)
 
     context = {
         'deleted_tasks': deleted_tasks,
         'deleted_wiki': deleted_wiki,
+        'deleted_projects': deleted_projects,
     }
     return render(request, 'deleted_items.html', context)
 
@@ -89,11 +91,13 @@ def restore_item(request, model_name, pk):
     """Восстановление записи"""
     if not request.user.is_superuser:
         return redirect('dashboard')
-
+    
     if model_name == 'task':
         item = get_object_or_404(Task.all_objects, pk=pk)
     elif model_name == 'wiki':
         item = get_object_or_404(WikiPage.all_objects, pk=pk)
+    elif model_name == 'project':
+        item = get_object_or_404(Project.all_objects, pk=pk)
     else:
         return redirect('deleted_items')
 
@@ -113,11 +117,13 @@ def permanent_delete(request, model_name, pk):
         item = get_object_or_404(Task.all_objects, pk=pk)
     elif model_name == 'wiki':
         item = get_object_or_404(WikiPage.all_objects, pk=pk)
+    elif model_name == 'project':
+        item = get_object_or_404(Project.all_objects, pk=pk)
     else:
         return redirect('deleted_items')
 
     if request.method == "POST":
-        item_name = item.title
+        item_name = item.name if model_name == 'project' else item.title
         item.delete()
         messages.success(request, f'Запись "{item_name}" была полностью удалена навсегда.')
         return redirect('deleted_items')

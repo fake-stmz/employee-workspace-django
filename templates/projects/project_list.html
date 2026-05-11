@@ -28,9 +28,14 @@
                 {% endif %}
             </div>
             <div class="card-footer">
-                <a href="{% url 'project_detail' project.pk %}" class="btn btn-primary btn-sm w-100">
-                    Открыть проект
-                </a>
+                <div class="btn-group w-100" role="group">
+                    <a href="{% url 'project_detail' project.pk %}" class="btn btn-primary btn-sm">Открыть</a>
+                    <a href="{% url 'project_update' project.pk %}" class="btn btn-outline-secondary btn-sm">Изменить</a>
+                    <button onclick="showDeleteModal('/projects/{{ project.pk }}/delete/', 'Проект «{{ project.name|escapejs }}»')"
+                            class="btn btn-outline-danger btn-sm">
+                        Удалить
+                    </button>
+                </div>
             </div>
         </div>
     </div>

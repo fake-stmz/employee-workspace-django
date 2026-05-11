@@ -180,14 +180,12 @@ def add_task_comment(request, pk):
 @handle_exceptions
 @login_required
 def project_list(request):
-    projects = Project.objects.all().annotate(
+    projects = Project.objects.annotate(
         tasks_count=Count('task'),
         completed_tasks=Count('task', filter=Q(task__status='done'))
     ).order_by('-created_at')
 
-    context = {
-        'projects': projects,
-    }
+    context = {'projects': projects}
     return render(request, 'projects/project_list.html', context)
 
 
@@ -196,10 +194,6 @@ def project_list(request):
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
     tasks = Task.objects.filter(project=project).select_related('assigned_to', 'client')
-
-    status_filter = request.GET.get('status')
-    if status_filter:
-        tasks = tasks.filter(status=status_filter)
 
     context = {
         'project': project,
@@ -222,5 +216,41 @@ def project_create(request):
     else:
         form = ProjectForm()
 
-    context = {"form": form, "title": "Создать проект"}
+    context = {"form": form, "title": "Создать новый проект"}
     return render(request, "projects/project_form.html", context)
+
+
+@handle_exceptions
+@login_required
+def project_update(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    
+    if request.method == "POST":
+        form = ProjectForm(request.POST, instance=project)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Проект "{project.name}" успешно обновлён!')
+            return redirect('project_detail', pk=project.pk)
+    else:
+        form = ProjectForm(instance=project)
+
+    context = {
+        "form": form,
+        "title": "Редактировать проект",
+        "project": project
+    }
+    return render(request, "projects/project_form.html", context)
+
+
+@handle_exceptions
+@login_required
+def project_delete(request, pk):
+    project = get_object_or_404(Project.all_objects, pk=pk)
+
+    if request.method == "POST":
+        project.soft_delete()
+        messages.success(request, f'Проект "{project.name}" перемещён в корзину.')
+        return redirect('project_list')
+    
+    context = {"project": project}
+    return render(request, "projects/project_confirm_delete.html", context)

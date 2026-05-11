@@ -4,11 +4,19 @@ from apps.clients.models import Client
 from apps.core.models import SoftDeletableModel, SoftDeletableManager, AllObjectsManager
 
 
-class Project(models.Model):
+class Project(SoftDeletableModel):
+
+    objects = SoftDeletableManager()
+    all_objects = AllObjectsManager()
 
     name = models.CharField(max_length=255, verbose_name="Название")
     description = models.TextField(blank=True, verbose_name="Описание")
-    manager = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, verbose_name="Менеджер")
+    manager = models.ForeignKey(
+        Employee, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        verbose_name="Менеджер"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

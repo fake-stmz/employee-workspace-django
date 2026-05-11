@@ -5,6 +5,45 @@
 
 <h2 class="mb-4"><i class="bi bi-trash3-fill"></i> Корзина</h2>
 
+<h5 class="mt-5">Удалённые проекты</h5>
+<div class="card mb-5">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Название проекта</th>
+                    <th>Удалено</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in deleted_projects %}
+                <tr>
+                    <td><strong>{{ project.name }}</strong></td>
+                    <td>{{ project.deleted_at|date:"d.m.Y H:i" }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'restore_item' 'project' project.pk %}" 
+                           class="btn btn-sm btn-success me-1">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                        <button onclick="showPermanentDeleteModal('project', {{ project.pk }}, '{{ project.name|escapejs }}')"
+                                class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center py-4 text-muted">
+                        Нет удалённых проектов
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <!-- Задачи -->
 <h5 class="mt-4">Удалённые задачи</h5>
 <div class="card mb-5">
