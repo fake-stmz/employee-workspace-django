@@ -10,6 +10,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
 from .decorators import handle_exceptions
+import requests
+import xml.etree.ElementTree as ET
+from apps.employees.models import Employee
+from apps.clients.models import Client
+from .models import SyncSettings
 
 
 @handle_exceptions
@@ -130,3 +135,133 @@ def permanent_delete(request, model_name, pk):
 
     # Если вдруг GET — просто редирект (на всякий случай)
     return redirect('deleted_items')
+
+
+def parse_and_sync_employees(xml_content):
+    root = ET.fromstring(xml_content)
+    created = updated = 0
+
+    for item in root.findall('.//Employee') or root.findall('.//Сотрудник'):
+        # Безопасное получение текста
+        def get_text(tag_names):
+            for tag in tag_names:
+                elem = item.find(tag)
+                if elem is not None and elem.text:
+                    return elem.text.strip()
+            return None
+
+        external_id = get_text(['ExternalID', 'ИД', 'Id'])
+        full_name   = get_text(['FullName', 'ФИО', 'Name'])
+        email       = get_text(['Email', 'Почта', 'email'])
+        position    = get_text(['Position', 'Должность']) or ''
+        department  = get_text(['Department', 'Подразделение']) or ''
+
+        if not full_name or not email:
+            continue
+
+        _, created_flag = Employee.objects.update_or_create(
+            email=email,
+            defaults={
+                'full_name': full_name,
+                'position': position,
+                'department': department,
+                'external_id': external_id,
+            }
+        )
+        if created_flag:
+            created += 1
+        else:
+            updated += 1
+
+    return created, updated
+
+
+def parse_and_sync_clients(xml_content):
+    root = ET.fromstring(xml_content)
+    created = updated = 0
+
+    for item in root.findall('.//Client') or root.findall('.//Клиент'):
+        def get_text(tag_names):
+            for tag in tag_names:
+                elem = item.find(tag)
+                if elem is not None and elem.text:
+                    return elem.text.strip()
+            return None
+
+        external_id = get_text(['ExternalID', 'ИД', 'Id'])
+        name        = get_text(['Name', 'Наименование'])
+        phone       = get_text(['Phone', 'Телефон']) or ''
+        email       = get_text(['Email', 'Почта', 'email']) or ''
+
+        if not name:
+            continue
+
+        _, created_flag = Client.objects.update_or_create(
+            name=name,
+            defaults={
+                'external_id': external_id,
+                'phone': phone,
+                'email': email,
+            }
+        )
+        if created_flag:
+            created += 1
+        else:
+            updated += 1
+
+    return created, updated
+
+
+def sync_from_1c(request, entity_type):
+    settings = SyncSettings.get_settings()
+    
+    if entity_type == 'employees':
+        url = settings.employees_url
+        success_msg = "Сотрудники"
+    else:
+        url = settings.clients_url
+        success_msg = "Клиенты"
+
+    if not url:
+        messages.warning(request, f"URL для {success_msg.lower()} не настроен!")
+        return
+
+    try:
+        response = requests.get(url, timeout=20)
+        response.encoding = 'utf-8'
+        response.raise_for_status()
+        xml_content = response.text
+
+        if entity_type == 'employees':
+            c, u = parse_and_sync_employees(xml_content)
+            settings.last_sync_employees = timezone.now()
+        else:
+            c, u = parse_and_sync_clients(xml_content)
+            settings.last_sync_clients = timezone.now()
+
+        settings.save()
+
+    except Exception as e:
+        messages.error(request, f"Ошибка синхронизации: {e}")
+
+@handle_exceptions
+@login_required
+def settings_view(request):
+    
+    if not request.user.is_superuser:
+        return redirect('dashboard')
+    
+    settings = SyncSettings.get_settings()
+
+    if request.method == 'POST':
+        settings.employees_url = request.POST.get('employees_url', '').strip()
+        settings.clients_url = request.POST.get('clients_url', '').strip()
+        settings.save()
+        messages.success(request, "Настройки успешно сохранены.")
+        return redirect('settings')
+
+    context = {
+        'settings': settings,
+        'page_title': 'Настройки'
+    }
+    return render(request, 'settings.html', context)

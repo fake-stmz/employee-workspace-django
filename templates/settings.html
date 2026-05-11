@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block page_title %}Настройки{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h4 class="mb-0">
+                <i class="bi bi-gear-fill"></i> Настройки системы
+            </h4>
+        </div>
+        <div class="card-body">
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-person-fill"></i> URL сотрудников
+                    </label>
+                    <input type="url" 
+                           name="employees_url" 
+                           class="form-control"
+                           value="{{ settings.employees_url }}"
+                           placeholder="https://1c.example.com/hs/exchange/employees/">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-people-fill"></i> URL клиентов
+                    </label>
+                    <input type="url" 
+                           name="clients_url" 
+                           class="form-control"
+                           value="{{ settings.clients_url }}"
+                           placeholder="https://1c.example.com/hs/exchange/clients/">
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-save"></i> Сохранить настройки
+                </button>
+            </form>
+
+            {% if settings.last_sync_employees or settings.last_sync_clients %}
+            <div class="mt-4 alert alert-info">
+                <strong>Последние синхронизации:</strong><br>
+                {% if settings.last_sync_employees %}
+                    Сотрудники: {{ settings.last_sync_employees|date:"d.m.Y H:i" }}<br>
+                {% endif %}
+                {% if settings.last_sync_clients %}
+                    Клиенты: {{ settings.last_sync_clients|date:"d.m.Y H:i" }}
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

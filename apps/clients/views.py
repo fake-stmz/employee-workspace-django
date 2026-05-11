@@ -5,6 +5,7 @@ from .serializers import ClientSerializer
 from django.contrib.auth.decorators import login_required
 from django.db import models
 from apps.core.decorators import handle_exceptions
+from apps.core.views import sync_from_1c
 
 
 class ClientViewSet(viewsets.ModelViewSet):
@@ -27,6 +28,8 @@ class ClientViewSet(viewsets.ModelViewSet):
 @handle_exceptions
 @login_required
 def client_list(request):
+    sync_from_1c(request, 'employees')
+    
     clients = Client.objects.select_related("manager")
 
     context = {

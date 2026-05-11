@@ -74,6 +74,8 @@ urlpatterns = [
     path('restore/<str:model_name>/<int:pk>/', restore_item, name='restore_item'),
     # Полное удаление
     path('permanent-delete/<str:model_name>/<int:pk>/', permanent_delete, name='permanent_delete'),
+    # Настройки синхронизации с 1С
+    path('settings/', settings_view, name='settings'),
 ]
 
 if settings.DEBUG:

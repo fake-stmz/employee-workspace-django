@@ -5,6 +5,7 @@ from .serializers import EmployeeSerializer
 from django.contrib.auth.decorators import login_required
 from django.db import models
 from apps.core.decorators import handle_exceptions
+from apps.core.views import sync_from_1c
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
@@ -24,6 +25,8 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 @handle_exceptions
 @login_required
 def employee_list(request):
+    sync_from_1c(request, 'clients')
+    
     employees = Employee.objects.all()
 
     context = {
