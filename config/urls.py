@@ -10,6 +10,7 @@ from apps.clients.views import *
 from apps.employees.views import *
 from apps.wiki.views import *
 from apps.mail.views import *
+from apps.documents.views import *
 from apps.core.views import *
 
 router = DefaultRouter()
@@ -51,6 +52,13 @@ urlpatterns = [
     path('employees/', employee_list, name='employee_list'),
     # Клиенты
     path('clients/', client_list, name='client_list'),
+    # Шаблоны документов
+    path('doc-templates/', template_list, name='template_list'),
+    path('doc-templates/create/', template_create, name='template_create'),
+    path('doc-templates/<int:pk>/', template_detail, name='template_detail'),
+    path('doc-templates/<int:pk>/edit/', template_update, name='template_update'),
+    path('doc-templates/<int:pk>/delete/', template_delete, name='template_delete'),
+    path('doc-templates/<int:pk>/fill/', template_fill, name='template_fill'),
     # Мини-вики
     path('wiki/', wiki_list, name='wiki_list'),
     path('wiki/<int:pk>/', wiki_page_view, name='wiki_page'),

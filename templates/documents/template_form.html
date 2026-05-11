@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<style>
+  .editor-toolbar button {
+    border: 1px solid #dee2e6;
+    background: #fff;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .editor-toolbar button:hover { background: #f0f2f5; }
+  .editor-toolbar button.active { background: #212529; color: #fff; border-color: #212529; }
+
+  #bodyEditor {
+    min-height: 380px;
+    border: 1px solid #dee2e6;
+    border-radius: 0 0 8px 8px;
+    padding: 16px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    line-height: 1.7;
+  }
+  #bodyEditor:focus { border-color: #86b7fe; box-shadow: 0 0 0 3px rgba(13,110,253,.15); }
+
+  .placeholder-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e8eaff;
+    color: #3d51e0;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.78rem;
+    font-family: monospace;
+    cursor: pointer;
+    border: 1px solid #c5caf5;
+    transition: background 0.15s;
+  }
+  .placeholder-chip:hover { background: #d0d4ff; }
+
+  .placeholder-detected {
+    background: #fff3cd;
+    border-radius: 3px;
+    padding: 1px 4px;
+  }
+</style>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>{{ title }}</strong>
+        <a href="{% url 'template_list' %}" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-arrow-left"></i> Назад
+        </a>
+      </div>
+      <div class="card-body">
+        <form method="post" id="templateForm">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Название <span class="text-danger">*</span></label>
+            <input type="text" name="title" class="form-control"
+                   value="{{ tpl.title|default:'' }}" required>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Категория</label>
+              <select name="category" class="form-select">
+                {% for value, label in categories %}
+                <option value="{{ value }}"
+                  {% if tpl.category == value or post.category == value %}selected{% endif %}>
+                  {{ label }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Описание</label>
+            <textarea name="description" class="form-control" rows="2"
+                      placeholder="Краткое описание шаблона...">{{ tpl.description|default:'' }}</textarea>
+          </div>
+
+          <!-- Rich text editor -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              Тело документа <span class="text-danger">*</span>
+              <span class="text-muted small fw-normal ms-2">
+                Используйте <code>&#123;&#123;имя_переменной&#125;&#125;</code> для плейсхолдеров
+              </span>
+            </label>
+
+            <!-- Toolbar -->
+            <div class="editor-toolbar d-flex flex-wrap gap-1 p-2 bg-light border border-bottom-0 rounded-top">
+              <button type="button" onclick="fmt('bold')" title="Жирный"><i class="bi bi-type-bold"></i></button>
+              <button type="button" onclick="fmt('italic')" title="Курсив"><i class="bi bi-type-italic"></i></button>
+              <button type="button" onclick="fmt('underline')" title="Подчёркнутый"><i class="bi bi-type-underline"></i></button>
+              <span class="border-start mx-1"></span>
+              <button type="button" onclick="fmt('justifyLeft')"   title="По левому краю"><i class="bi bi-text-left"></i></button>
+              <button type="button" onclick="fmt('justifyCenter')" title="По центру"><i class="bi bi-text-center"></i></button>
+              <button type="button" onclick="fmt('justifyRight')"  title="По правому краю"><i class="bi bi-text-right"></i></button>
+              <span class="border-start mx-1"></span>
+              <button type="button" onclick="insertHR()" title="Горизонтальная линия"><i class="bi bi-dash-lg"></i></button>
+              <button type="button" onclick="insertPageBreak()" title="Разрыв страницы при печати">
+                <i class="bi bi-scissors"></i> Разрыв
+              </button>
+              <span class="border-start mx-1"></span>
+              <select id="fontSizeSelect" class="form-select form-select-sm" style="width:auto;"
+                      onchange="fmt('fontSize', this.value); this.blur()">
+                <option value="">Размер</option>
+                <option value="2">Мелкий</option>
+                <option value="3">Обычный</option>
+                <option value="4">Средний</option>
+                <option value="5">Крупный</option>
+                <option value="6">Заголовок</option>
+              </select>
+            </div>
+
+            <!-- Editable area -->
+            <div id="bodyEditor" contenteditable="true" spellcheck="true">
+              {{ tpl.body|default:''|safe }}
+            </div>
+
+            <!-- Hidden textarea synced before submit -->
+            <textarea name="body" id="bodyHidden" style="display:none;"></textarea>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>Сохранить шаблон
+            </button>
+            <a href="{% url 'template_list' %}" class="btn btn-outline-secondary">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="col-lg-4">
+    <!-- Placeholders helper -->
+    <div class="card mb-3">
+      <div class="card-header"><strong><i class="bi bi-braces me-1"></i>Плейсхолдеры</strong></div>
+      <div class="card-body">
+        <p class="text-muted small">Введите <code>&#123;&#123;имя&#125;&#125;</code> прямо в тексте,
+          или вставьте готовый блок:</p>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          {% for chip in "дата,номер_договора,название_компании,фио_клиента,фио_сотрудника,должность,сумма,адрес"|split:"," %}
+          <span class="placeholder-chip" onclick="insertPlaceholder('{{ chip }}')">
+            <i class="bi bi-plus-sm"></i>{{ chip }}
+          </span>
+          {% endfor %}
+        </div>
+        <hr>
+        <p class="text-muted small mb-2">Обнаруженные в тексте:</p>
+        <div id="detectedChips" class="d-flex flex-wrap gap-2">
+          <span class="text-muted small">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick preview -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong><i class="bi bi-eye me-1"></i>Предпросмотр</strong>
+        <button class="btn btn-sm btn-outline-secondary" onclick="refreshPreview()">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div>
+      <div class="card-body p-3">
+        <div id="previewPane"
+             style="font-size:0.8rem;min-height:120px;border:1px dashed #dee2e6;border-radius:6px;padding:12px;background:#fafafa;">
+          <span class="text-muted">Начните вводить текст…</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── rich text helpers ─────────────────────────────────────────────────────────
+function fmt(cmd, val) {
+  document.getElementById('bodyEditor').focus();
+  document.execCommand(cmd, false, val || null);
+  updateDetected();
+}
+function insertHR() {
+  document.getElementById('bodyEditor').focus();
+  document.execCommand('insertHTML', false, '<hr style="border-top:1px solid #ccc;margin:12px 0;">');
+  updateDetected();
+}
+function insertPageBreak() {
+  document.getElementById('bodyEditor').focus();
+  document.execCommand('insertHTML', false,
+    '<div style="page-break-after:always;border-top:2px dashed #aaa;margin:16px 0;padding-top:4px;"><span style="font-size:0.7em;color:#aaa;">— разрыв страницы —</span></div>');
+  updateDetected();
+}
+function insertPlaceholder(name) {
+  document.getElementById('bodyEditor').focus();
+  document.execCommand('insertHTML', false,
+    '<span class="placeholder-detected">' + '{{' + name + '}}' + '</span>&nbsp;');
+  updateDetected();
+  refreshPreview();
+}
+
+// ── placeholder detection ─────────────────────────────────────────────────────
+function getEditorText() {
+  return document.getElementById('bodyEditor').innerText || '';
+}
+function getEditorHTML() {
+  return document.getElementById('bodyEditor').innerHTML || '';
+}
+function extractPlaceholders(text) {
+  const re = /\{\{(\w+)\}\}/g;
+  const seen = new Set();
+  let m;
+  while ((m = re.exec(text)) !== null) { seen.add(m[1]); }
+  return [...seen];
+}
+function updateDetected() {
+  const names = extractPlaceholders(getEditorText());
+  const container = document.getElementById('detectedChips');
+  if (!names.length) {
+    container.innerHTML = '<span class="text-muted small">—</span>';
+    return;
+  }
+  container.innerHTML = names.map(n =>
+    `<span class="placeholder-chip"><i class="bi bi-braces"></i>${n}</span>`
+  ).join('');
+}
+function refreshPreview() {
+  document.getElementById('previewPane').innerHTML =
+    getEditorHTML() || '<span class="text-muted">Начните вводить текст…</span>';
+}
+
+// ── sync hidden textarea before submit ───────────────────────────────────────
+document.getElementById('templateForm').addEventListener('submit', function() {
+  document.getElementById('bodyHidden').value = getEditorHTML();
+});
+
+// ── live update ───────────────────────────────────────────────────────────────
+document.getElementById('bodyEditor').addEventListener('input', function() {
+  updateDetected();
+  refreshPreview();
+});
+
+// ── init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  // Restore body from hidden (form re-render on error)
+  const hidden = document.getElementById('bodyHidden').value;
+  if (hidden) document.getElementById('bodyEditor').innerHTML = hidden;
+  updateDetected();
+  refreshPreview();
+});
+</script>
+{% endblock %}

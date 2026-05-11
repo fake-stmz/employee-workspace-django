@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}Заполнить: {{ tpl.title }}{% endblock %}
+{% block page_title %}Заполнить шаблон{% endblock %}
+
+{% block content %}
+<style>
+  .fill-preview {
+    font-size: 0.93rem;
+    line-height: 1.8;
+    padding: 24px 32px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    min-height: 300px;
+  }
+  .fill-preview mark {
+    background: #fff3cd;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: monospace;
+    font-size: 0.85em;
+    transition: background 0.2s;
+  }
+  .fill-preview mark.filled {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .field-badge {
+    flex-shrink: 0;
+    font-family: monospace;
+    font-size: 0.78rem;
+    background: #fff3cd;
+    border: 1px solid #fcd34d;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 140px;
+    text-align: right;
+    color: #92400e;
+  }
+</style>
+
+<div class="row">
+  <!-- Fill form -->
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ tpl.title }}</strong>
+          <span class="badge bg-secondary bg-opacity-10 text-secondary ms-2">{{ tpl.get_category_display }}</span>
+        </div>
+        <a href="{% url 'template_detail' tpl.pk %}" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+      </div>
+      <div class="card-body">
+        {% if placeholders %}
+        <p class="text-muted small mb-3">
+          <i class="bi bi-info-circle me-1"></i>
+          Заполните поля — предпросмотр обновляется мгновенно.
+          Затем нажмите «Распечатать».
+        </p>
+        <form method="post" id="fillForm">
+          {% csrf_token %}
+          {% for p in placeholders %}
+          <div class="field-row">
+            <span class="field-badge">&#123;&#123;{{ p.name }}&#125;&#125;</span>
+            <input type="text"
+                   name="{{ p.name }}"
+                   id="field_{{ p.name }}"
+                   class="form-control form-control-sm fill-input"
+                   placeholder="{{ p.label }}"
+                   data-name="{{ p.name }}"
+                   autocomplete="off">
+          </div>
+          {% endfor %}
+          <hr>
+          <button type="submit" class="btn btn-success w-100">
+            <i class="bi bi-printer me-1"></i>Сформировать и распечатать
+          </button>
+        </form>
+        {% else %}
+        <div class="alert alert-info mb-0">
+          <i class="bi bi-info-circle me-1"></i>
+          Этот шаблон не содержит плейсхолдеров.
+          Его можно сразу распечатать.
+        </div>
+        <form method="post" class="mt-3">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success w-100">
+            <i class="bi bi-printer me-1"></i>Распечатать
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Live preview -->
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">
+        <strong><i class="bi bi-eye me-1"></i>Предпросмотр</strong>
+      </div>
+      <div class="card-body p-4">
+        <div class="fill-preview" id="livePreview"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── template body from Django ─────────────────────────────────────────────────
+const TEMPLATE_HTML = "{{ tpl.body|escapejs }}";
+
+// Store current fill values
+const values = {};
+
+function updatePreview() {
+  let html = TEMPLATE_HTML;
+  // Replace filled placeholders; mark unfilled ones in yellow
+  html = html.replace(/\{\{(\w+)\}\}/g, function(match, name) {
+    const val = (values[name] || '').trim();
+    if (val) {
+      return `<mark class="filled">${val}</mark>`;
+    }
+    return `<mark>${match}</mark>`;
+  });
+  document.getElementById('livePreview').innerHTML = html;
+}
+
+document.querySelectorAll('.fill-input').forEach(input => {
+  // Init
+  values[input.dataset.name] = '';
+
+  input.addEventListener('input', function() {
+    values[this.dataset.name] = this.value;
+    updatePreview();
+  });
+});
+
+// Initial render
+updatePreview();
+</script>
+{% endblock %}

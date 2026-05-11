@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}{{ tpl.title }}{% endblock %}
+{% block page_title %}Шаблон: {{ tpl.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8">
+
+    <!-- Header card -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h4 class="mb-1">{{ tpl.title }}</h4>
+            <span class="badge bg-secondary bg-opacity-10 text-secondary">{{ tpl.get_category_display }}</span>
+            {% if tpl.description %}
+            <p class="text-muted mt-2 mb-0">{{ tpl.description }}</p>
+            {% endif %}
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{% url 'template_fill' tpl.pk %}" class="btn btn-success">
+              <i class="bi bi-pencil-square me-1"></i>Заполнить и печать
+            </a>
+            <a href="{% url 'template_update' tpl.pk %}" class="btn btn-outline-primary">
+              <i class="bi bi-pencil me-1"></i>Редактировать
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer text-muted small d-flex gap-4">
+        <span><i class="bi bi-person me-1"></i>{{ tpl.created_by|default:"—" }}</span>
+        <span><i class="bi bi-calendar me-1"></i>Создан: {{ tpl.created_at|date:"d.m.Y H:i" }}</span>
+        <span><i class="bi bi-clock-history me-1"></i>Обновлён: {{ tpl.updated_at|date:"d.m.Y H:i" }}</span>
+      </div>
+    </div>
+
+    <!-- Body preview -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong><i class="bi bi-file-text me-1"></i>Тело шаблона</strong>
+        <small class="text-muted">Плейсхолдеры выделены жёлтым</small>
+      </div>
+      <div class="card-body p-4" id="bodyPreview"
+           style="font-size:0.95rem; line-height:1.8; min-height:200px;">
+        {{ tpl.body|safe }}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right panel: placeholders -->
+  <div class="col-lg-4">
+    <div class="card mb-3">
+      <div class="card-header"><strong><i class="bi bi-braces me-1"></i>Плейсхолдеры</strong></div>
+      <div class="card-body">
+        {% if placeholders %}
+        <p class="text-muted small mb-3">
+          Найдено {{ placeholders|length }} переменных. При заполнении вы введёте значения для каждой.
+        </p>
+        <ul class="list-unstyled mb-0">
+          {% for p in placeholders %}
+          <li class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-warning text-dark font-monospace">&#123;&#123;{{ p.name }}&#125;&#125;</span>
+            <span class="text-muted small">→ {{ p.label }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted small mb-0">Плейсхолдеры не найдены.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><strong>Действия</strong></div>
+      <div class="card-body d-flex flex-column gap-2">
+        <a href="{% url 'template_fill' tpl.pk %}" class="btn btn-success w-100">
+          <i class="bi bi-pencil-square me-1"></i>Заполнить и распечатать
+        </a>
+        <a href="{% url 'template_update' tpl.pk %}" class="btn btn-outline-primary w-100">
+          <i class="bi bi-pencil me-1"></i>Редактировать шаблон
+        </a>
+        <hr class="my-1">
+        <button onclick="showDeleteModal('{% url 'template_delete' tpl.pk %}', '{{ tpl.title|escapejs }}')"
+                class="btn btn-outline-danger w-100">
+          <i class="bi bi-trash me-1"></i>Удалить шаблон
+        </button>
+        <a href="{% url 'template_list' %}" class="btn btn-outline-secondary w-100">
+          <i class="bi bi-arrow-left me-1"></i>К списку шаблонов
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Highlight placeholders in preview */
+  #bodyPreview { }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const preview = document.getElementById('bodyPreview');
+  preview.innerHTML = preview.innerHTML.replace(
+    /\{\{(\w+)\}\}/g,
+    function(match, name) {
+      return '<mark style="background:#fff3cd;border-radius:3px;padding:1px 5px;font-family:monospace;font-size:0.85em;">' + '{{' + name + '}}</mark>';
+    }
+  );
+});
+</script>
+{% endblock %}
