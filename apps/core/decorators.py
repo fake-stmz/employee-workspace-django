@@ -7,6 +7,9 @@ def handle_exceptions(view_func):
     """Декоратор для безопасной обработки исключений в views"""
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
+        
+        return view_func(request, *args, **kwargs)
+        """
         try:
             return view_func(request, *args, **kwargs)
         except Exception as e:
@@ -19,4 +22,5 @@ def handle_exceptions(view_func):
                 messages.error(request, f"Произошла ошибка: {error_message[:150]}")
             
             return redirect('dashboard')
+        """
     return wrapper

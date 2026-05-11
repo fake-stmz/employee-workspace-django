@@ -5,7 +5,7 @@ from .serializers import TaskSerializer, ProjectSerializer, TaskCommentSerialize
 from django_filters.rest_framework import DjangoFilterBackend
 from .forms import TaskForm
 from django.contrib.auth.decorators import login_required
-from apps.employees.models import Employee
+from .forms import TaskCommentForm
 from apps.documents.models import Document
 from django.contrib import messages
 from apps.core.decorators import handle_exceptions
@@ -147,9 +147,29 @@ def task_delete(request, pk):
 def task_detail(request, pk):
     task = get_object_or_404(Task, pk=pk)
     documents = task.document_set.all()
-
+    comment_form = TaskCommentForm()
+    
     context = {
         "task": task,
         "documents": documents,
+        "comment_form": comment_form,
     }
     return render(request, "tasks/task_detail.html", context)
+
+
+@handle_exceptions
+@login_required
+def add_task_comment(request, pk):
+    task = get_object_or_404(Task, pk=pk)
+    
+    if request.method == "POST":
+        form = TaskCommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.task = task
+            comment.author = request.user.employee
+            comment.save()
+            messages.success(request, "Комментарий добавлен")
+            return redirect('task_detail', pk=task.pk)
+    
+    return redirect('task_detail', pk=task.pk)

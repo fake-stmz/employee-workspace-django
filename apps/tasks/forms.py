@@ -1,5 +1,5 @@
 from django import forms
-from .models import Task
+from .models import Task, TaskComment
 from apps.documents.models import Document
 
 
@@ -59,3 +59,16 @@ class TaskForm(forms.ModelForm):
             )
         
             self.fields['delete_files'].queryset = self.instance.document_set.all()
+            
+        
+class TaskCommentForm(forms.ModelForm):
+    class Meta:
+        model = TaskComment
+        fields = ['text']
+        widgets = {
+            'text': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'form-control',
+                'placeholder': 'Напишите комментарий...'
+            })
+        }

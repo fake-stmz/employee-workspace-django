@@ -38,6 +38,7 @@ urlpatterns = [
     path('tasks/create/', task_create, name='task_create'),
     path('tasks/<int:pk>/edit/', task_update, name='task_update'),
     path('tasks/<int:pk>/delete/', task_delete, name='task_delete'),
+    path('tasks/<int:pk>/comment/', add_task_comment, name='add_task_comment'),
     # Сотрудники
     path('employees/', employee_list, name='employee_list'),
     # Клиенты
