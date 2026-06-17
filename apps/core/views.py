@@ -3,6 +3,8 @@ from apps.tasks.models import Task, Project
 from apps.wiki.models import WikiPage
 from django.db.models import Count
 from django.utils import timezone
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -17,7 +19,7 @@ from apps.clients.models import Client
 from .models import SyncSettings
 
 
-@handle_exceptions
+#@handle_exceptions
 @login_required
 def dashboard(request):
     now = timezone.now()
@@ -45,12 +47,40 @@ def dashboard(request):
     colors = ['#0d6efd', '#ffc107', '#198754']
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90, textprops={'fontsize': 12})
+
+    if sum(values) > 0:
+        ax.pie(
+            values,
+            labels=labels,
+            colors=colors,
+            autopct='%1.1f%%',
+            startangle=90,
+            textprops={'fontsize': 12}
+        )
+    else:
+        ax.text(
+            0.5,
+            0.5,
+            'Нет данных',
+            ha='center',
+            va='center',
+            fontsize=14
+        )
+        ax.axis('off')
+
     ax.set_title('Задачи по статусам', fontsize=14, pad=20)
 
     # Сохраняем график в base64
     buffer = io.BytesIO()
-    plt.savefig(buffer, format='png', bbox_inches='tight', dpi=120)
+
+    fig.savefig(
+        buffer,
+        format='png',
+        dpi=120,
+        bbox_inches='tight'
+    )
+
+    plt.close(fig)
     buffer.seek(0)
     image_png = buffer.getvalue()
     buffer.close()
