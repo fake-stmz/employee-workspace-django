@@ -36,15 +36,22 @@ def _human_label(name: str) -> str:
 @handle_exceptions
 @login_required
 def template_list(request):
-    category = request.GET.get('category', '')
+    category    = request.GET.get('category', '')
+    my_only     = request.GET.get('my', '') == '1'
+
     qs = DocumentTemplate.objects.all()
     if category:
         qs = qs.filter(category=category)
+    if my_only:
+        employee = getattr(request.user, 'employee', None)
+        if employee:
+            qs = qs.filter(created_by=employee)
 
     context = {
-        'templates':  qs,
-        'categories': DocumentTemplate.CATEGORY_CHOICES,
+        'templates':        qs,
+        'categories':       DocumentTemplate.CATEGORY_CHOICES,
         'selected_category': category,
+        'my_only':          my_only,
     }
     return render(request, 'documents/template_list.html', context)
 

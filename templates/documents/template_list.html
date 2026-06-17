@@ -16,18 +16,33 @@
 <!-- Фильтр по категориям -->
 <div class="card mb-4">
   <div class="card-body py-3">
-    <div class="d-flex flex-wrap gap-2 align-items-center">
-      <span class="text-secondary small fw-semibold text-uppercase me-1">Категория:</span>
-      <a href="{% url 'template_list' %}"
-         class="btn btn-sm {% if not selected_category %}btn-dark{% else %}btn-outline-secondary{% endif %}">
-        Все
-      </a>
-      {% for value, label in categories %}
-      <a href="?category={{ value }}"
-         class="btn btn-sm {% if selected_category == value %}btn-dark{% else %}btn-outline-secondary{% endif %}">
-        {{ label }}
-      </a>
-      {% endfor %}
+    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <span class="text-secondary small fw-semibold text-uppercase me-1">Категория:</span>
+        <a href="?{% if my_only %}my=1{% endif %}"
+           class="btn btn-sm {% if not selected_category %}btn-dark{% else %}btn-outline-secondary{% endif %}">
+          Все
+        </a>
+        {% for value, label in categories %}
+        <a href="?category={{ value }}{% if my_only %}&my=1{% endif %}"
+           class="btn btn-sm {% if selected_category == value %}btn-dark{% else %}btn-outline-secondary{% endif %}">
+          {{ label }}
+        </a>
+        {% endfor %}
+      </div>
+      <div class="form-check form-switch ms-auto mb-0 d-flex align-items-center gap-2">
+        <input class="form-check-input" type="checkbox" role="switch" id="myTemplatesToggle"
+               {% if my_only %}checked{% endif %}
+               onchange="
+                 const url = new URL(window.location);
+                 if (this.checked) { url.searchParams.set('my','1'); }
+                 else { url.searchParams.delete('my'); }
+                 window.location = url;
+               ">
+        <label class="form-check-label text-nowrap fw-semibold" for="myTemplatesToggle">
+          <i class="bi bi-person-check"></i> Только мои
+        </label>
+      </div>
     </div>
   </div>
 </div>
