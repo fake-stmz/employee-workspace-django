@@ -16,8 +16,8 @@
         </div>
     </div>
     <div class="card-body">
-        <div class="content">
-            {{ page.content|linebreaks }}
+        <div class="wiki-content">
+            {{ page.content_html }}
         </div>
     </div>
     <div class="card-footer text-muted small">
@@ -30,4 +30,70 @@
     ← Назад к списку
 </a>
 
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.wiki-content h1, .wiki-content h2, .wiki-content h3,
+.wiki-content h4, .wiki-content h5, .wiki-content h6 {
+    margin-top: 1.4em;
+    margin-bottom: .5em;
+    font-weight: 600;
+}
+.wiki-content h1 { font-size: 1.75rem; border-bottom: 2px solid #dee2e6; padding-bottom: .3em; }
+.wiki-content h2 { font-size: 1.4rem;  border-bottom: 1px solid #dee2e6; padding-bottom: .25em; }
+.wiki-content h3 { font-size: 1.15rem; }
+.wiki-content p  { margin-bottom: .85em; line-height: 1.7; }
+.wiki-content ul, .wiki-content ol { padding-left: 1.6em; margin-bottom: .85em; }
+.wiki-content li { margin-bottom: .3em; }
+.wiki-content blockquote {
+    border-left: 4px solid #dee2e6;
+    padding: .5em 1em;
+    color: #6c757d;
+    margin: 1em 0;
+    background: #f8f9fa;
+    border-radius: 0 .375rem .375rem 0;
+}
+.wiki-content code {
+    background: #f1f3f5;
+    padding: .15em .4em;
+    border-radius: .25rem;
+    font-size: .875em;
+    color: #d63384;
+}
+.wiki-content pre {
+    background: #212529;
+    color: #f8f9fa;
+    padding: 1em 1.2em;
+    border-radius: .5rem;
+    overflow-x: auto;
+    margin-bottom: 1em;
+}
+.wiki-content pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: .9em;
+}
+.wiki-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1em;
+}
+.wiki-content table th,
+.wiki-content table td {
+    border: 1px solid #dee2e6;
+    padding: .45em .75em;
+}
+.wiki-content table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+.wiki-content table tr:nth-child(even) td {
+    background: #fbfbfb;
+}
+.wiki-content img { max-width: 100%; border-radius: .375rem; }
+.wiki-content a { color: #0d6efd; }
+.wiki-content hr { border-color: #dee2e6; margin: 1.5em 0; }
+</style>
 {% endblock %}

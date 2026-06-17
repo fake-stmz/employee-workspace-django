@@ -6,13 +6,19 @@
 {% block content %}
 
 <div class="row justify-content-center">
-    <div class="col-lg-10">
+    <div class="col-lg-12">
         <div class="card">
-            <div class="card-header bg-white">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">{{ title }}</h4>
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" id="previewToggle">
+                    <label class="form-check-label fw-semibold" for="previewToggle">
+                        <i class="bi bi-eye"></i> Предпросмотр
+                    </label>
+                </div>
             </div>
             <div class="card-body">
-                <form method="post">
+                <form method="post" id="wikiForm">
                     {% csrf_token %}
 
                     {% if form.id %}
@@ -28,8 +34,43 @@
                     </div>
 
                     <div class="mb-3">
-                        {{ form.content.label_tag }}
-                        {{ form.content|add_class:"form-control" }}
+                        <label class="form-label">{{ form.content.label }}</label>
+
+                        <!-- Editor / Preview split -->
+                        <div id="editorPane">
+                            <div class="d-flex gap-2 mb-1 flex-wrap">
+                                <span class="text-muted small align-self-center">Markdown разметка:</span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('**','**','жирный')"><i class="bi bi-type-bold"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('*','*','курсив')"><i class="bi bi-type-italic"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('\n## ','','Заголовок')"><i class="bi bi-type-h2"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('\n- ','','пункт')"><i class="bi bi-list-ul"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('\n1. ','','пункт')"><i class="bi bi-list-ol"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('\`','`','код')"><code>&lt;/&gt;</code></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('\n> ','','цитата')"><i class="bi bi-blockquote-left"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('[','](url)','ссылка')"><i class="bi bi-link-45deg"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertMd('\n---\n','','')">—</button>
+                            </div>
+                            <textarea name="content"
+                                      id="id_content"
+                                      class="form-control font-monospace"
+                                      rows="18"
+                                      placeholder="Пишите в формате Markdown...">{{ form.content.value|default:'' }}</textarea>
+                        </div>
+
+                        <div id="splitPane" class="d-none">
+                            <div class="row g-0 border rounded" style="height:460px;">
+                                <div class="col-6 border-end d-flex flex-column">
+                                    <div class="px-3 py-2 bg-light border-bottom small text-muted fw-semibold">Редактор</div>
+                                    <textarea id="splitEditor"
+                                              class="form-control font-monospace border-0 rounded-0 flex-grow-1"
+                                              style="resize:none;height:100%;"></textarea>
+                                </div>
+                                <div class="col-6 d-flex flex-column">
+                                    <div class="px-3 py-2 bg-light border-bottom small text-muted fw-semibold">Предпросмотр</div>
+                                    <div id="splitPreview" class="flex-grow-1 overflow-auto p-3 wiki-content"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="d-flex gap-2">
@@ -44,4 +85,82 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.wiki-content h1, .wiki-content h2, .wiki-content h3,
+.wiki-content h4, .wiki-content h5, .wiki-content h6 {
+    margin-top: 1.1em; margin-bottom: .4em; font-weight: 600;
+}
+.wiki-content h1 { font-size: 1.6rem; border-bottom: 2px solid #dee2e6; padding-bottom: .2em; }
+.wiki-content h2 { font-size: 1.3rem; border-bottom: 1px solid #dee2e6; padding-bottom: .2em; }
+.wiki-content p  { margin-bottom: .75em; line-height: 1.7; }
+.wiki-content ul, .wiki-content ol { padding-left: 1.5em; margin-bottom: .75em; }
+.wiki-content blockquote { border-left: 4px solid #dee2e6; padding: .4em 1em; color: #6c757d; background: #f8f9fa; border-radius: 0 .3rem .3rem 0; }
+.wiki-content code { background:#f1f3f5; padding:.1em .35em; border-radius:.2rem; font-size:.875em; color:#d63384; }
+.wiki-content pre { background:#212529; color:#f8f9fa; padding:.85em 1.1em; border-radius:.4rem; overflow-x:auto; }
+.wiki-content pre code { background:none; color:inherit; padding:0; }
+.wiki-content table { width:100%; border-collapse:collapse; margin-bottom:.85em; }
+.wiki-content table th, .wiki-content table td { border:1px solid #dee2e6; padding:.4em .7em; }
+.wiki-content table th { background:#f8f9fa; font-weight:600; }
+.wiki-content a { color:#0d6efd; }
+.wiki-content img { max-width:100%; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- marked.js for client-side preview -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+const mainTextarea = document.getElementById('id_content');
+const splitEditor  = document.getElementById('splitEditor');
+const splitPreview = document.getElementById('splitPreview');
+const editorPane   = document.getElementById('editorPane');
+const splitPane    = document.getElementById('splitPane');
+const toggle       = document.getElementById('previewToggle');
+
+marked.setOptions({ breaks: true });
+
+function renderPreview(md) {
+    splitPreview.innerHTML = marked.parse(md || '');
+}
+
+toggle.addEventListener('change', function() {
+    if (this.checked) {
+        // copy current text to split editor, hide simple editor
+        splitEditor.value = mainTextarea.value;
+        renderPreview(splitEditor.value);
+        editorPane.classList.add('d-none');
+        splitPane.classList.remove('d-none');
+    } else {
+        // copy back
+        mainTextarea.value = splitEditor.value;
+        splitPane.classList.add('d-none');
+        editorPane.classList.remove('d-none');
+    }
+});
+
+splitEditor.addEventListener('input', function() {
+    mainTextarea.value = this.value;
+    renderPreview(this.value);
+});
+
+// Markdown toolbar helper
+function insertMd(before, after, placeholder) {
+    const ta = toggle.checked ? splitEditor : mainTextarea;
+    const start = ta.selectionStart;
+    const end   = ta.selectionEnd;
+    const sel   = ta.value.substring(start, end) || placeholder;
+    const replacement = before + sel + after;
+    ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
+    ta.focus();
+    const cursor = start + before.length + sel.length;
+    ta.setSelectionRange(cursor, cursor);
+    if (toggle.checked) {
+        mainTextarea.value = splitEditor.value;
+        renderPreview(splitEditor.value);
+    }
+}
+</script>
 {% endblock %}

@@ -1,5 +1,7 @@
+import markdown as md_lib
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.utils.safestring import mark_safe
 from .models import WikiPage
 from .forms import WikiPageForm
 from django.db import models
@@ -9,6 +11,16 @@ from django.contrib import messages
 from apps.core.decorators import handle_exceptions
 
 
+def _render_markdown(text: str) -> str:
+    """Convert markdown text to safe HTML with common extensions."""
+    extensions = ['extra', 'codehilite', 'toc', 'nl2br', 'sane_lists']
+    try:
+        html = md_lib.markdown(text or '', extensions=extensions)
+    except Exception:
+        html = md_lib.markdown(text or '', extensions=['extra', 'nl2br'])
+    return mark_safe(html)
+
+
 class WikiViewSet(viewsets.ModelViewSet):
     queryset = WikiPage.objects.all()
     serializer_class = WikiPageSerializer
@@ -16,7 +28,6 @@ class WikiViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         search = self.request.query_params.get('search')
-        
         if search:
             queryset = queryset.filter(
                 models.Q(title__icontains=search) |
@@ -29,31 +40,22 @@ class WikiViewSet(viewsets.ModelViewSet):
 @login_required
 def wiki_list(request):
     pages = WikiPage.objects.all().order_by("-created_at")
-
-    context = {
-        "pages": pages
-    }
-
+    context = {"pages": pages}
     return render(request, "wiki/wiki_list.html", context)
 
 
 @handle_exceptions
 @login_required
 def wiki_page_view(request, pk):
-
     page = get_object_or_404(WikiPage, pk=pk)
-
-    context = {
-        "page": page
-    }
-
+    page.content_html = _render_markdown(page.content)
+    context = {"page": page}
     return render(request, "wiki/wiki_page.html", context)
 
 
 @handle_exceptions
 @login_required
 def wiki_create(request):
-
     if request.method == "POST":
         form = WikiPageForm(request.POST)
         if form.is_valid():
@@ -65,18 +67,13 @@ def wiki_create(request):
     else:
         form = WikiPageForm()
 
-    context = {
-        "form": form,
-        "title": "Создать страницу"
-    }
-
+    context = {"form": form, "title": "Создать страницу"}
     return render(request, "wiki/wiki_form.html", context)
 
 
 @handle_exceptions
 @login_required
 def wiki_update(request, pk):
-
     page = get_object_or_404(WikiPage, pk=pk)
 
     if request.method == "POST":
@@ -88,24 +85,17 @@ def wiki_update(request, pk):
     else:
         form = WikiPageForm(instance=page)
 
-    context = {
-        "form": form,
-        "title": "Редактировать страницу"
-    }
-
+    context = {"form": form, "title": "Редактировать страницу"}
     return render(request, "wiki/wiki_form.html", context)
 
 
 @handle_exceptions
 @login_required
 def wiki_delete(request, pk):
-
     page = get_object_or_404(WikiPage.all_objects, pk=pk)
-
     if request.method == "POST":
         page.soft_delete()
         messages.success(request, f'Страница "{page.title}" перемещена в корзину.')
         return redirect("wiki_list")
-    
     context = {"page": page}
     return render(request, "wiki/wiki_confirm_delete.html", context)
